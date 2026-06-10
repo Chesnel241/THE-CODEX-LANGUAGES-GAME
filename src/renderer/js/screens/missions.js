@@ -9,20 +9,22 @@ window.Codex = window.Codex || {};
 
   Codex.router.register("missions", (screenEl) => {
     const st = Codex.state;
-    screenEl.appendChild(pageHeader(`${Codex.CONTENT.language.flag} Londres — ${Codex.CONTENT.zone.domain}`));
+    const arc = Codex.arc();
+    Codex.music.play(arc.theme, "calm");
+    screenEl.appendChild(pageHeader(`${arc.language.flag} ${arc.zone.name} — ${arc.zone.domain}`));
 
     const scroll = el(`<div class="screen-scroll"></div>`);
     const list = el(`<div class="mission-list"></div>`);
 
-    Codex.CONTENT.missions.forEach((m) => {
+    arc.missions.forEach((m) => {
       const unlocked = st.isMissionUnlocked(m.id);
       const done = st.isMissionDone(m.id);
       const best = st.prog().missions[m.id];
 
       let status, statusClass;
-      if (!unlocked) { status = "VERROUILLÉE"; statusClass = "st-locked"; }
-      else if (done) { status = `COMPLÉTÉE · ${best.bestScore}%`; statusClass = "st-done"; }
-      else { status = "NOUVELLE"; statusClass = "st-new"; }
+      if (!unlocked) { status = Codex.t("missions.locked"); statusClass = "st-locked"; }
+      else if (done) { status = Codex.t("missions.done", { n: best.bestScore }); statusClass = "st-done"; }
+      else { status = Codex.t("missions.new"); statusClass = "st-new"; }
 
       const card = el(`
         <div class="card card-hover mission-item ${unlocked ? "" : "mission-locked"}">
@@ -35,7 +37,7 @@ window.Codex = window.Codex || {};
             <div class="small muted">${esc(m.subtitle)} — 📍 ${esc(m.location)}</div>
             <div class="small">
               <span class="stars">${stars(m.difficulty)}</span>
-              <span class="muted"> · ~${m.durationMin} min · </span>
+              <span class="muted"> · ~${m.durationMin} ${esc(Codex.t("missions.min"))} · </span>
               <span class="mono muted">${esc(m.brief.intelPreview)}</span>
             </div>
           </div>

@@ -1,37 +1,41 @@
 /**
  * THE CODEX — Sound design synthétisé (GDD §11).
  * Tous les sons sont générés via WebAudio : aucun asset binaire,
- * zéro dépendance, fonctionne 100 % hors-ligne.
+ * zéro dépendance, 100 % hors-ligne. Deux bus : SFX et Musique.
  */
 "use strict";
 window.Codex = window.Codex || {};
 
 (function () {
   let ctx = null;
-  let masterGain = null;
+  let sfxGain = null;
+  let musicGain = null;
   let ambienceNodes = null;
 
   function ensureCtx() {
     if (!ctx) {
       ctx = new (window.AudioContext || window.webkitAudioContext)();
-      masterGain = ctx.createGain();
-      masterGain.gain.value = volume();
-      masterGain.connect(ctx.destination);
+      sfxGain = ctx.createGain();
+      musicGain = ctx.createGain();
+      sfxGain.connect(ctx.destination);
+      musicGain.connect(ctx.destination);
+      applyVolume();
     }
     if (ctx.state === "suspended") ctx.resume();
     return ctx;
   }
 
-  function volume() {
-    const s = Codex.state && Codex.state.data ? Codex.state.data.settings : null;
-    return s ? Math.max(0, Math.min(1, s.volume / 100)) : 0.7;
+  function settings() {
+    return Codex.state && Codex.state.data ? Codex.state.data.settings : { volSfx: 70, volMusic: 60 };
   }
 
   function applyVolume() {
-    if (masterGain) masterGain.gain.value = volume();
+    const s = settings();
+    if (sfxGain) sfxGain.gain.value = Math.max(0, Math.min(1, (s.volSfx ?? 70) / 100));
+    if (musicGain) musicGain.gain.value = Math.max(0, Math.min(1, (s.volMusic ?? 60) / 100)) * 0.85;
   }
 
-  /** Oscillateur simple avec enveloppe et glissando optionnel. */
+  /** Oscillateur simple avec enveloppe et glissando optionnel (bus SFX). */
   function tone(freq, dur, { type = "sine", gain = 0.12, when = 0, slideTo = null } = {}) {
     const c = ensureCtx();
     const t0 = c.currentTime + when;
@@ -43,12 +47,12 @@ window.Codex = window.Codex || {};
     g.gain.setValueAtTime(0.0001, t0);
     g.gain.exponentialRampToValueAtTime(gain, t0 + 0.012);
     g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-    osc.connect(g).connect(masterGain);
+    osc.connect(g).connect(sfxGain);
     osc.start(t0);
     osc.stop(t0 + dur + 0.05);
   }
 
-  /** Bruit filtré (souffle, papier, statique radio…). */
+  /** Bruit filtré (souffle, papier, statique radio…) — bus SFX. */
   function noise(dur, { gain = 0.08, when = 0, freq = 1000, q = 1, type = "bandpass", slideTo = null } = {}) {
     const c = ensureCtx();
     const t0 = c.currentTime + when;
@@ -67,7 +71,7 @@ window.Codex = window.Codex || {};
     g.gain.setValueAtTime(0.0001, t0);
     g.gain.exponentialRampToValueAtTime(gain, t0 + 0.015);
     g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-    src.connect(filter).connect(g).connect(masterGain);
+    src.connect(filter).connect(g).connect(sfxGain);
     src.start(t0);
   }
 
@@ -118,6 +122,10 @@ window.Codex = window.Codex || {};
       tone(116.5, 0.4, { type: "sawtooth", gain: 0.06 });
     },
     suspicionUp() { tone(440, 0.18, { type: "sawtooth", gain: 0.04, slideTo: 520 }); },
+    heartbeat() {
+      tone(62, 0.12, { type: "sine", gain: 0.2, slideTo: 48 });
+      tone(58, 0.1, { type: "sine", gain: 0.14, slideTo: 45, when: 0.22 });
+    },
     echo() { tone(784, 0.1, { gain: 0.05 }); tone(988, 0.14, { gain: 0.05, when: 0.1 }); },
     fanfare() {
       [523, 659, 784, 1047, 784, 1047].forEach((f, i) => tone(f, 0.22, { gain: 0.08, when: i * 0.13 }));
@@ -135,13 +143,13 @@ window.Codex = window.Codex || {};
     good() { tone(880, 0.1, { gain: 0.07 }); tone(1109, 0.16, { gain: 0.07, when: 0.08 }); },
   };
 
-  /** Ambiance : drone discret + souffle, par type de lieu. */
+  /** Ambiance : drone discret + souffle (bus SFX, sous la musique). */
   function startAmbience() {
-    const s = Codex.state.data.settings;
+    const s = settings();
     if (!s.ambience || ambienceNodes) return;
     const c = ensureCtx();
     const g = c.createGain();
-    g.gain.value = 0.035;
+    g.gain.value = 0.03;
     const o1 = c.createOscillator();
     o1.type = "sine"; o1.frequency.value = 55;
     const o2 = c.createOscillator();
@@ -149,10 +157,10 @@ window.Codex = window.Codex || {};
     const lfo = c.createOscillator();
     lfo.frequency.value = 0.08;
     const lfoGain = c.createGain();
-    lfoGain.gain.value = 0.012;
+    lfoGain.gain.value = 0.01;
     lfo.connect(lfoGain).connect(g.gain);
     o1.connect(g); o2.connect(g);
-    g.connect(masterGain);
+    g.connect(sfxGain);
     o1.start(); o2.start(); lfo.start();
     ambienceNodes = { o1, o2, lfo, g };
   }
@@ -166,18 +174,23 @@ window.Codex = window.Codex || {};
     ambienceNodes = null;
   }
 
-  /** Prononciation via le moteur TTS du système (hors-ligne sous Windows). */
-  function speak(text, lang = "en-GB") {
+  /** Prononciation via le TTS système — langue par défaut : la L2 active. */
+  function speak(text, lang) {
     try {
+      const target = lang || (Codex.arc && Codex.arc().language.tts) || "en-GB";
       window.speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
-      u.lang = lang;
+      u.lang = target;
       u.rate = 0.92;
-      const v = window.speechSynthesis.getVoices().find((v) => v.lang === lang || v.lang.startsWith(lang.split("-")[0]));
+      const v = window.speechSynthesis.getVoices().find((v) => v.lang === target || v.lang.startsWith(target.split("-")[0]));
       if (v) u.voice = v;
       window.speechSynthesis.speak(u);
     } catch { /* TTS indisponible : silencieux */ }
   }
 
-  Codex.audio = { sfx, speak, startAmbience, stopAmbience, applyVolume };
+  Codex.audio = {
+    sfx, speak, startAmbience, stopAmbience, applyVolume,
+    /** Accès interne pour le moteur musical. */
+    _ensure() { ensureCtx(); return { ctx, musicGain }; },
+  };
 })();

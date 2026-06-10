@@ -16,7 +16,7 @@ const path = require("path");
 const fs = require("fs");
 
 const IS_DEV = process.argv.includes("--dev");
-const SAVE_VERSION = 1;
+const SAVE_VERSIONS = [1, 2]; // v1 : MVP ; v2 : multi-langues (migré côté renderer)
 const SAVE_MAX_BYTES = 1024 * 1024; // 1 Mo — borne dure anti-abus
 
 // Sandbox pour tous les renderers, avant app.ready.
@@ -47,7 +47,7 @@ function savePath() {
 /** Validation stricte du payload de sauvegarde côté main. */
 function isValidSave(data) {
   if (!data || typeof data !== "object" || Array.isArray(data)) return false;
-  if (data.version !== SAVE_VERSION) return false;
+  if (!SAVE_VERSIONS.includes(data.version)) return false;
   let serialized;
   try {
     serialized = JSON.stringify(data);

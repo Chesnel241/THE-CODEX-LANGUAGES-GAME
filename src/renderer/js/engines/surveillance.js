@@ -14,13 +14,13 @@ Codex.engines = Codex.engines || {};
   function glossify(text, glossary) {
     let html = esc(text);
     for (const key of Object.keys(glossary)) {
-      const re = new RegExp(`\\b(${key})\\b`, "gi");
-      html = html.replace(re, `<span class="gloss" data-key="${esc(key)}">$1</span>`);
+      const re = new RegExp(`(^|[^\\p{L}])(${key})(?=$|[^\\p{L}])`, "giu");
+      html = html.replace(re, (m, pre, word) => `${pre}<span class="gloss" data-key="${esc(key)}">${word}</span>`);
     }
     return html;
   }
 
-  /** opts : { content: { document, questions }, hints, onDone } */
+  /** opts : { content: { document, questions }, hints, echoIntro, onDone } */
   function mount(screenEl, opts) {
     const { content, onDone } = opts;
     const hints = opts.hints ?? Codex.state.level().hints;
@@ -30,14 +30,15 @@ Codex.engines = Codex.engines || {};
     const doc = content.document;
 
     screenEl.innerHTML = "";
+    Codex.music.play(Codex.arc().theme, "calm");
 
     screenEl.appendChild(el(`
       <div class="terrain-topbar">
         <div>
-          <div class="label">DOCUMENT INTERCEPTÉ</div>
+          <div class="label">${esc(Codex.t("terrain.docTitle"))}</div>
           <div class="data">${esc(doc.title)}</div>
         </div>
-        <div class="tag-classified">CLASSIFIÉ — NIVEAU 2</div>
+        <div class="tag-classified">${esc(Codex.t("terrain.classified"))}</div>
       </div>`));
 
     const wrap = el(`<div class="surv-wrap"></div>`);
@@ -59,13 +60,13 @@ Codex.engines = Codex.engines || {};
     paper.addEventListener("mouseover", (e) => {
       const g = e.target.closest(".gloss");
       if (!g) return;
-      const entry = doc.glossary[g.dataset.key.toLowerCase()];
+      const entry = doc.glossary[g.dataset.key.toLowerCase()] || doc.glossary[g.dataset.key];
       if (!entry) return;
       Codex.audio.sfx.hover();
       tip = el(`<div class="gloss-tip"><span class="mono">${esc(entry.ph)}</span><br>${esc(entry.hint)}</div>`);
       document.body.appendChild(tip);
       const r = g.getBoundingClientRect();
-      tip.style.left = `${Math.min(r.left, window.innerWidth - 280)}px`;
+      tip.style.left = `${Math.min(r.left, window.innerWidth - 300)}px`;
       tip.style.top = `${r.bottom + 6}px`;
     });
     paper.addEventListener("mouseout", (e) => {
@@ -75,7 +76,7 @@ Codex.engines = Codex.engines || {};
     // --- Questions ---
     const qPane = el(`<div class="surv-questions"></div>`);
     wrap.appendChild(qPane);
-    qPane.appendChild(el(`<div class="label">EXTRACTION REQUISE — ${content.questions.length} POINTS CRITIQUES</div>`));
+    qPane.appendChild(el(`<div class="label">${esc(Codex.t("terrain.extraction", { n: content.questions.length }))}</div>`));
 
     let currentQuestion = content.questions[0];
     content.questions.forEach((q) => {
@@ -99,13 +100,13 @@ Codex.engines = Codex.engines || {};
             choicesEl.querySelectorAll(".choice-btn").forEach((b) => (b.disabled = true));
             answered += 1;
             if (answered === content.questions.length) setTimeout(finish, 900);
-            else echo.say(`Information sécurisée. ${content.questions.length - answered} point(s) restant(s).`);
+            else echo.say(Codex.t("echo.qLeft", { n: content.questions.length - answered }));
           } else {
             btn.classList.add("bad");
             btn.disabled = true;
             errors += 1;
             Codex.audio.sfx.error();
-            echo.say("Relisez le document. La réponse y est, noir sur blanc.");
+            echo.say(Codex.t("echo.reread"));
           }
         });
         choicesEl.appendChild(btn);
@@ -113,7 +114,7 @@ Codex.engines = Codex.engines || {};
       qPane.appendChild(card);
     });
 
-    const echo = echoBar(opts.echoIntro || "Survolez les mots soulignés pour une analyse contextuelle. Jamais de traduction — votre cerveau fait le lien.", {
+    const echo = echoBar(opts.echoIntro || Codex.t("echo.survIntro"), {
       hints,
       onHint: () => { if (currentQuestion) echo.say(currentQuestion.echoHint); },
     });

@@ -45,3 +45,54 @@ jobs:
             dist/*.blockmap
           if-no-files-found: error
           retention-days: 30
+
+  # Test de fumée bout-en-bout (jeu réel) — n'empêche pas la production des .exe
+  smoke:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+
+      - name: Run smoke test (plays both language arcs)
+        run: npx electron scripts/smoke-test.js
+
+  # Publication automatique sur la page Releases quand un tag v* est poussé
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: TheCodex-Windows
+          path: dist
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.exe
+          generate_release_notes: true
+          body: |
+            ## THE CODEX — Windows
+
+            | Fichier | Usage |
+            |---|---|
+            | `TheCodex-Setup-*.exe` | **Installateur** — double-cliquez, suivez l'assistant |
+            | `TheCodex-Portable-*.exe` | **Portable** — aucun droit admin, lancez directement |
+
+            ⚠️ Binaire non signé : si Windows SmartScreen s'affiche, cliquez
+            **« Informations complémentaires » → « Exécuter quand même »**.
+            Voir GUIDE-INSTALLATION.md pour le pas-à-pas complet.

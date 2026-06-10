@@ -2,6 +2,7 @@
  * THE CODEX — Moteur LA NÉGOCIATION (GDD §5.3).
  * Construction de phrases : banque de mots colorée par catégorie,
  * Niveau de Coopération du PNJ, feedback non-punitif.
+ * Musique : la tension monte avec les échanges.
  */
 "use strict";
 window.Codex = window.Codex || {};
@@ -19,7 +20,7 @@ Codex.engines = Codex.engines || {};
     return a;
   }
 
-  /** opts : { content: { scene, rounds }, hints, onDone } */
+  /** opts : { content: { scene, rounds }, hints, echoIntro, onDone } */
   function mount(screenEl, opts) {
     const { content, onDone } = opts;
     const hints = opts.hints ?? Codex.state.level().hints;
@@ -29,15 +30,16 @@ Codex.engines = Codex.engines || {};
     let roundIdx = 0;
 
     screenEl.innerHTML = "";
+    Codex.music.play(Codex.arc().theme, "exploration");
 
     const topbar = el(`
       <div class="terrain-topbar">
         <div>
-          <div class="label">NÉGOCIATION EN COURS</div>
+          <div class="label">${esc(Codex.t("terrain.negoTitle"))}</div>
           <div class="data">${esc(content.scene.name)}</div>
         </div>
         <div class="suspicion-wrap coop-wrap">
-          <span class="label">COOPÉRATION</span>
+          <span class="label">${esc(Codex.t("terrain.cooperation"))}</span>
           <div class="suspicion-bar"><div class="suspicion-fill" style="background: var(--accent-cyan); width: 50%"></div></div>
           <span class="data coop-val">50%</span>
         </div>
@@ -50,7 +52,7 @@ Codex.engines = Codex.engines || {};
     screenEl.appendChild(wrap);
 
     let currentRound = null;
-    const echo = echoBar(opts.echoIntro || "Construisez chaque phrase avec précision. Votre grammaire, c'est votre crédibilité.", {
+    const echo = echoBar(opts.echoIntro || Codex.t("echo.negoIntro"), {
       hints,
       onHint: () => { if (currentRound) echo.say(currentRound.echoHint); },
     });
@@ -67,9 +69,13 @@ Codex.engines = Codex.engines || {};
       currentRound = round;
       wrap.innerHTML = "";
 
+      // Tension musicale croissante avec les échanges
+      if (i >= content.rounds.length - 1) Codex.music.setState("climax");
+      else if (i >= Math.floor(content.rounds.length / 2)) Codex.music.setState("tension");
+
       const npcBubble = el(`
         <div class="npc-bubble">
-          <div class="npc-name">🎙️ LA CIBLE</div>
+          <div class="npc-name">${esc(Codex.t("terrain.npcTarget"))}</div>
           <div class="npc-line"></div>
           <div class="npc-reaction"></div>
         </div>`);
@@ -80,11 +86,11 @@ Codex.engines = Codex.engines || {};
 
       wrap.appendChild(el(`
         <div class="nego-target">
-          <div class="label mb-1">PHRASE CIBLE — ÉCHANGE ${i + 1}/${content.rounds.length}</div>
-          <div style="font-size:16px; font-weight:600">${esc(round.targetL1)}</div>
+          <div class="label mb-1">${esc(Codex.t("terrain.target", { i: i + 1, n: content.rounds.length }))}</div>
+          <div style="font-size:17px; font-weight:600">${esc(round.targetL1)}</div>
         </div>`));
 
-      const buildZone = el(`<div class="build-zone"><span class="muted small build-placeholder">Glissez votre phrase ici, mot par mot…</span></div>`);
+      const buildZone = el(`<div class="build-zone"><span class="muted small">${esc(Codex.t("terrain.buildPh"))}</span></div>`);
       wrap.appendChild(buildZone);
 
       const bankEl = el(`<div class="word-bank"></div>`);
@@ -92,23 +98,23 @@ Codex.engines = Codex.engines || {};
 
       const actions = el(`
         <div class="row mt-1">
-          <button class="btn validate-btn">TRANSMETTRE</button>
-          <button class="btn btn-muted clear-btn">EFFACER</button>
+          <button class="btn validate-btn">${esc(Codex.t("terrain.transmit"))}</button>
+          <button class="btn btn-muted clear-btn">${esc(Codex.t("terrain.clear"))}</button>
         </div>`);
       wrap.appendChild(actions);
 
-      const built = []; // { w, chipBtn }
+      const built = []; // { w, cat, bankBtn }
 
       function refreshBuild() {
         buildZone.innerHTML = "";
         if (built.length === 0) {
-          buildZone.appendChild(el(`<span class="muted small">Composez votre phrase, mot par mot…</span>`));
+          buildZone.appendChild(el(`<span class="muted small">${esc(Codex.t("terrain.buildPh"))}</span>`));
           return;
         }
         built.forEach((item, bi) => {
           const chip = el(`<button class="word-chip cat-${esc(item.cat)}"></button>`);
           chip.textContent = item.w;
-          chip.title = "Retirer ce mot";
+          chip.title = Codex.t("terrain.removeWord");
           chip.addEventListener("click", () => {
             Codex.audio.sfx.click();
             item.bankBtn.disabled = false;
@@ -160,17 +166,18 @@ Codex.engines = Codex.engines || {};
           buildZone.classList.add("review-halo");
           setTimeout(() => buildZone.classList.remove("review-halo"), 700);
           if (built.length === round.solution.length) {
-            reaction.textContent = "La cible fronce les sourcils. La structure ne sonne pas juste.";
-            echo.say("Structure incorrecte. Vérifiez l'accord du verbe avec son sujet.");
+            reaction.textContent = Codex.t("echo.npcFrown");
+            echo.say(Codex.t("echo.structureWrong"));
           } else {
-            reaction.textContent = "La cible attend la suite de votre phrase…";
-            echo.say(`Phrase incomplète : ${round.solution.length} éléments attendus.`);
+            reaction.textContent = Codex.t("echo.npcWaits");
+            echo.say(Codex.t("echo.incomplete", { n: round.solution.length }));
           }
         }
       });
     }
 
     function finish() {
+      Codex.music.setState("exploration");
       onDone({
         errors,
         hintsUsed: echo.hintsUsed(),

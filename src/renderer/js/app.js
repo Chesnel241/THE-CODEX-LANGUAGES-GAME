@@ -10,11 +10,12 @@ window.Codex = window.Codex || {};
   const flow = {
     /**
      * Point d'entrée unique de fin de mission, appelé par les moteurs.
-     * @param mission objet mission du contenu
+     * @param mission objet mission de l'arc actif
      * @param r résultat moteur { errors, hintsUsed, fragments, cultural, maxSuspicion, timeSec }
      */
     completeMission(mission, r) {
       const st = Codex.state;
+      const arc = Codex.arc();
       const perfect = r.errors === 0;
       const silent = r.hintsUsed === 0;
       const score = Math.max(10, Math.min(100, 100 - r.errors * 12 - r.hintsUsed * 8));
@@ -70,7 +71,7 @@ window.Codex = window.Codex || {};
       tryAward("fantome", mission.type === "infiltration" && r.maxSuspicion === 0);
       tryAward("silence_radio", silent);
       tryAward("eclair", r.timeSec < mission.durationMin * 60 * 0.5);
-      tryAward("explorateur", Codex.CONTENT.missions
+      tryAward("explorateur", arc.missions
         .filter((m) => m.cultural)
         .every((m) => st.data.vault.some((v) => v.id === `cult-${m.id}`)));
 

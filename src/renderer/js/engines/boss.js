@@ -18,13 +18,14 @@ Codex.engines = Codex.engines || {};
 
     function showPhaseBanner(phase, then) {
       screenEl.innerHTML = "";
+      Codex.music.play(Codex.arc().theme, "tension");
       Codex.audio.sfx.tension();
       const banner = el(`
         <div class="phase-banner">
           <div class="phase-num">${esc(phase.title)}</div>
           <div class="h1 mt-2">${esc(mission.title)}</div>
           <div class="mt-2 muted">${esc(phase.desc)}</div>
-          <button class="btn mt-3">ENGAGER LA PHASE →</button>
+          <button class="btn mt-3">${esc(Codex.t("terrain.engage"))}</button>
         </div>`);
       banner.querySelector(".btn").addEventListener("click", () => {
         Codex.audio.sfx.stamp();
@@ -48,7 +49,7 @@ Codex.engines = Codex.engines || {};
         engine.mount(screenEl, {
           content: phaseContent,
           hints: 0, // Boss : aucun indice automatique (GDD §5.5)
-          echoIntro: "Phase critique. Je reste silencieuse — vous avez l'intel qu'il faut.",
+          echoIntro: Codex.t("echo.bossSilent"),
           onDone: (r) => {
             totals.errors += r.errors;
             totals.hintsUsed += r.hintsUsed;
@@ -71,13 +72,14 @@ Codex.engines = Codex.engines || {};
 
     // Cinématique d'introduction (GDD : 30 s — version condensée)
     screenEl.innerHTML = "";
+    Codex.music.play(Codex.arc().theme, "tension");
     const intro = el(`
       <div class="phase-banner">
-        <div class="tag-classified">OPÉRATION FINALE — NIVEAU MAXIMAL</div>
+        <div class="tag-classified">${esc(Codex.t("terrain.finalOp"))}</div>
         <div class="h1 mt-2">${esc(mission.title)}</div>
         <div class="mt-2" style="font-style:italic">${esc(mission.brief.narrative)}</div>
         <div class="mt-2 muted small">${esc(mission.brief.context)}</div>
-        <button class="btn mt-3">LANCER L'ASSAUT FINAL →</button>
+        <button class="btn mt-3">${esc(Codex.t("terrain.launchFinal"))}</button>
       </div>`);
     intro.querySelector(".btn").addEventListener("click", () => {
       Codex.audio.sfx.scanner();

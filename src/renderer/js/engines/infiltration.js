@@ -1,7 +1,8 @@
 /**
  * THE CODEX — Moteur L'INFILTRATION (GDD §5.2).
  * Interactions sociales + Compteur de Suspicion. Pas de game over :
- * à 100 %, ECHO déclenche la "Phase Complication" et la mission continue.
+ * à 100 %, ECHO déclenche la « Phase Complication ». La musique suit
+ * la suspicion : exploration → tension (>40 %) → climax (>75 %).
  */
 "use strict";
 window.Codex = window.Codex || {};
@@ -26,10 +27,11 @@ Codex.engines = Codex.engines || {};
     return "var(--accent-red)";
   }
 
-  /** opts : { content: { scene, interactions }, hints, onDone } */
+  /** opts : { content: { scene, interactions }, hints, echoIntro, onDone } */
   function mount(screenEl, opts) {
     const { content, onDone } = opts;
     const hints = opts.hints ?? Math.min(1, Codex.state.level().hints); // 1 max en infiltration (GDD)
+    const arc = Codex.arc();
     const startTime = Date.now();
     let suspicion = 0;
     let maxSuspicion = 0;
@@ -38,15 +40,16 @@ Codex.engines = Codex.engines || {};
     let complicationTriggered = false;
 
     screenEl.innerHTML = "";
+    Codex.music.play(arc.theme, "exploration");
 
     const topbar = el(`
       <div class="terrain-topbar">
         <div>
-          <div class="label">INFILTRATION EN COURS</div>
+          <div class="label">${esc(Codex.t("terrain.infilTitle"))}</div>
           <div class="data">${esc(content.scene.name)}</div>
         </div>
         <div class="suspicion-wrap">
-          <span class="label">SUSPICION</span>
+          <span class="label">${esc(Codex.t("terrain.suspicion"))}</span>
           <div class="suspicion-bar"><div class="suspicion-fill"></div></div>
           <span class="data suspicion-val">0%</span>
         </div>
@@ -62,7 +65,7 @@ Codex.engines = Codex.engines || {};
     scene.appendChild(dialogueZone);
 
     let currentInteraction = null;
-    const echo = echoBar(opts.echoIntro || "Fondez-vous dans la masse. Observez avant de répondre.", {
+    const echo = echoBar(opts.echoIntro || Codex.t("echo.infilIntro"), {
       hints,
       onHint: () => {
         if (currentInteraction) echo.say(currentInteraction.echoHint);
@@ -72,6 +75,8 @@ Codex.engines = Codex.engines || {};
 
     scanEffect(scene);
 
+    function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
     function setSuspicion(v) {
       suspicion = Math.max(0, Math.min(100, v));
       maxSuspicion = Math.max(maxSuspicion, suspicion);
@@ -79,20 +84,24 @@ Codex.engines = Codex.engines || {};
       fill.style.background = suspicionColor(suspicion);
       valEl.textContent = `${suspicion}%`;
 
+      // Musique adaptative selon la pression
+      if (suspicion > 75) Codex.music.setState("climax");
+      else if (suspicion > 40) Codex.music.setState("tension");
+      else Codex.music.setState("exploration");
+
       if (suspicion >= 100 && !complicationTriggered) {
         complicationTriggered = true;
-        Codex.audio.sfx.tension();
-        echo.say("Phase Complication. Changez d'approche — registre neutre, phrases courtes. Je vous couvre.");
-        setSuspicion(70); // l'agent "change d'approche", la pression redescend
+        Codex.audio.sfx.heartbeat();
+        echo.say(Codex.t("echo.complication"));
+        setSuspicion(70); // l'agent « change d'approche », la pression redescend
       } else if (suspicion > 80) {
-        Codex.audio.sfx.tension();
-        echo.say(pick(Codex.CONTENT.echo.urgent));
+        Codex.audio.sfx.heartbeat();
+        echo.say(pick(arc.echo.urgent));
       } else if (suspicion > 60) {
-        echo.say(pick(Codex.CONTENT.echo.warning));
+        Codex.audio.sfx.tension();
+        echo.say(pick(arc.echo.warning));
       }
     }
-
-    function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
     function showInteraction(i) {
       const inter = content.interactions[i];

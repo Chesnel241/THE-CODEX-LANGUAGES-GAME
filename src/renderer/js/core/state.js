@@ -1,14 +1,15 @@
 /**
- * THE CODEX — État du jeu et persistance.
- * La sauvegarde transite par le pont IPC (validée côté main).
- * Repli localStorage si l'app est ouverte hors Electron (dev navigateur).
+ * THE CODEX — État du jeu et persistance (schéma v2).
+ * v2 : langue parlée (L1) + langue d'apprentissage (L2), progression et
+ * Coffre-Fort multi-langues, volumes musique/SFX séparés.
+ * La sauvegarde transite par le pont IPC (validée côté main) ;
+ * repli localStorage hors Electron (dev navigateur).
  */
 "use strict";
 window.Codex = window.Codex || {};
 
 (function () {
-  const SAVE_VERSION = 1;
-  const LANG = "en-UK";
+  const SAVE_VERSION = 2;
 
   function todayStr() {
     const d = new Date();
@@ -18,12 +19,10 @@ window.Codex = window.Codex || {};
   function defaultData() {
     return {
       version: SAVE_VERSION,
-      agent: { codeName: "AGENT ZERO", createdAt: new Date().toISOString() },
-      settings: { volume: 70, ambience: true, reducedMotion: false },
-      progress: {
-        [LANG]: { xp: 0, missions: {} }, // missions: { id: { bestScore, attempts, completedAt } }
-      },
-      vault: [], // { id, kind, title, data, acquiredAt, timesReviewed, lastReviewed }
+      agent: { codeName: "AGENT ZERO", createdAt: new Date().toISOString(), l1: null, l2: null },
+      settings: { volMusic: 60, volSfx: 70, ambience: true, reducedMotion: false },
+      progress: {}, // par langue : { xp, missions: { id: { bestScore, attempts, completedAt } } }
+      vault: [], // { id, lang, kind, title, data, acquiredAt, timesReviewed, lastReviewed }
       medals: [], // { id, earnedAt }
       daily: { lastCompleted: null, count: 0 },
       stats: {
@@ -36,11 +35,28 @@ window.Codex = window.Codex || {};
     };
   }
 
+  /** Migration v1 → v2 : conserve toute la progression existante. */
+  function migrateV1(old) {
+    const d = Object.assign(defaultData(), old);
+    d.version = SAVE_VERSION;
+    d.agent = Object.assign({ l1: "fr", l2: "en-UK" }, old.agent);
+    if (!d.agent.l1) d.agent.l1 = "fr";
+    if (!d.agent.l2) d.agent.l2 = "en-UK";
+    const oldVol = old.settings && typeof old.settings.volume === "number" ? old.settings.volume : 70;
+    d.settings = {
+      volMusic: Math.round(oldVol * 0.85),
+      volSfx: oldVol,
+      ambience: old.settings ? old.settings.ambience !== false : true,
+      reducedMotion: Boolean(old.settings && old.settings.reducedMotion),
+    };
+    d.vault = (old.vault || []).map((v) => ({ lang: "en-UK", ...v }));
+    return d;
+  }
+
   let saveTimer = null;
 
   const state = {
     data: defaultData(),
-    lang: LANG,
 
     async init() {
       let loaded = null;
@@ -51,13 +67,19 @@ window.Codex = window.Codex || {};
           loaded = JSON.parse(localStorage.getItem("codex-save") || "null");
         }
       } catch { loaded = null; } // pont indisponible ou sauvegarde corrompue → départ propre
-      if (loaded && loaded.version === SAVE_VERSION) {
-        // Fusion défensive : les champs manquants reprennent les valeurs par défaut
+
+      if (loaded && loaded.version === 1) {
+        this.data = migrateV1(loaded);
+        this.save();
+      } else if (loaded && loaded.version === SAVE_VERSION) {
         this.data = Object.assign(defaultData(), loaded);
+        this.data.agent = Object.assign(defaultData().agent, loaded.agent);
         this.data.settings = Object.assign(defaultData().settings, loaded.settings);
         this.data.stats = Object.assign(defaultData().stats, loaded.stats);
       }
+
       this.touchDay();
+      Codex.i18n.set(this.l1());
       document.body.classList.toggle("reduced-motion", this.data.settings.reducedMotion);
     },
 
@@ -88,8 +110,29 @@ window.Codex = window.Codex || {};
       }
     },
 
-    // ----- Progression -----
-    prog() { return this.data.progress[LANG]; },
+    // ----- Langues -----
+    l1() { return this.data.agent.l1 || "fr"; },
+    lang() { return this.data.agent.l2 || "en-UK"; },
+    onboarded() { return Boolean(this.data.agent.l1 && this.data.agent.l2); },
+
+    setLanguages(l1, l2) {
+      this.data.agent.l1 = l1;
+      this.data.agent.l2 = l2;
+      Codex.i18n.set(l1);
+      this.save();
+    },
+
+    setL2(l2) {
+      this.data.agent.l2 = l2;
+      this.save();
+    },
+
+    // ----- Progression (par langue d'apprentissage) -----
+    prog() {
+      const l2 = this.lang();
+      if (!this.data.progress[l2]) this.data.progress[l2] = { xp: 0, missions: {} };
+      return this.data.progress[l2];
+    },
 
     addXp(amount) {
       const before = this.level();
@@ -118,7 +161,7 @@ window.Codex = window.Codex || {};
     },
 
     isMissionUnlocked(missionId) {
-      const list = Codex.CONTENT.missions;
+      const list = Codex.arc().missions;
       const idx = list.findIndex((m) => m.id === missionId);
       if (idx <= 0) return true;
       return this.isMissionDone(list[idx - 1].id);
@@ -139,12 +182,20 @@ window.Codex = window.Codex || {};
     // ----- Coffre-Fort -----
     addToVault(item) {
       if (this.data.vault.some((v) => v.id === item.id)) return false;
-      this.data.vault.push({ ...item, acquiredAt: new Date().toISOString(), timesReviewed: 0, lastReviewed: null });
+      this.data.vault.push({
+        lang: this.lang(),
+        ...item,
+        acquiredAt: new Date().toISOString(),
+        timesReviewed: 0,
+        lastReviewed: null,
+      });
       this.save();
       return true;
     },
 
-    vaultByKind(kind) { return this.data.vault.filter((v) => v.kind === kind); },
+    /** Intel de la langue active uniquement. */
+    vaultItems() { return this.data.vault.filter((v) => v.lang === this.lang()); },
+    vaultByKind(kind) { return this.vaultItems().filter((v) => v.kind === kind); },
 
     markReviewed(id) {
       const v = this.data.vault.find((v) => v.id === id);
@@ -155,7 +206,7 @@ window.Codex = window.Codex || {};
       }
     },
 
-    /** Répétition espacée simplifiée (esprit SM-2) : item "à revoir" si
+    /** Répétition espacée simplifiée (esprit SM-2) : item « à revoir » si
      *  l'intervalle écoulé dépasse 2^(timesReviewed) jours. */
     needsReview(item) {
       const last = item.lastReviewed || item.acquiredAt;

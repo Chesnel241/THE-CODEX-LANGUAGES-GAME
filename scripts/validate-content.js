@@ -1,6 +1,6 @@
 /**
  * THE CODEX — Validation CI : syntaxe de tous les fichiers JS
- * + intégrité du schéma de contenu des missions (GDD §13.3).
+ * + intégrité du schéma de contenu des arcs (GDD §13.3).
  * Zéro dépendance — exécuté par `npm test`.
  */
 "use strict";
@@ -22,7 +22,7 @@ function ok(msg) {
 }
 
 // ---------- 1. Vérification de syntaxe (node --check) ----------
-console.log("\n[1/2] Syntaxe JavaScript");
+console.log("\n[1/3] Syntaxe JavaScript");
 function walk(dir) {
   let files = [];
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -40,21 +40,34 @@ for (const f of jsFiles) {
 }
 if (failures === 0) ok(`${jsFiles.length} fichiers JS valides`);
 
-// ---------- 2. Schéma de contenu ----------
-console.log("\n[2/2] Schéma de contenu des missions");
+// ---------- 2. Chargement du contenu ----------
+console.log("\n[2/3] Chargement des données");
 global.window = global; // le contenu cible le renderer
-require(path.join(ROOT, "src", "renderer", "js", "data", "content.js"));
-const C = global.Codex.CONTENT;
+require(path.join(ROOT, "src", "renderer", "js", "data", "content-core.js"));
+require(path.join(ROOT, "src", "renderer", "js", "data", "content-en.js"));
+require(path.join(ROOT, "src", "renderer", "js", "data", "content-fr.js"));
+const Codex = global.Codex;
+const C = Codex.CONTENT;
 
-const missionIds = new Set();
-const intelIds = new Set();
+if (C.levels.length !== 5) fail("Il faut exactement 5 niveaux d'agent (GDD §10.2)");
+if (C.countries.length !== 10) fail("Il faut 10 pays Phase 1 (GDD §3.2)");
+for (const country of C.countries) {
+  if (country.arcId && !Codex.ARCS[country.arcId]) fail(`Pays ${country.id} : arc inconnu ${country.arcId}`);
+}
+ok(`${Object.keys(Codex.ARCS).length} arcs chargés : ${Object.keys(Codex.ARCS).join(", ")}`);
+
+// ---------- 3. Schéma des missions ----------
+console.log("\n[3/3] Schéma de contenu des missions");
 
 function checkPercee(label, content) {
   if (!Array.isArray(content.fragments) || content.fragments.length < 2 || content.fragments.length > 6) {
     fail(`${label} : nombre de fragments invalide`);
     return;
   }
+  const seen = new Set();
   for (const f of content.fragments) {
+    if (seen.has(f.id)) fail(`${label} : fragment id dupliqué ${f.id}`);
+    seen.add(f.id);
     for (const k of ["id", "icon", "label", "sceneText", "intel", "rule", "echo"]) {
       if (!f[k]) fail(`${label} / ${f.id || "?"} : champ fragment manquant « ${k} »`);
     }
@@ -88,6 +101,7 @@ function checkNegociation(label, content) {
   }
   for (const [i, round] of content.rounds.entries()) {
     const bankWords = new Set((round.bank || []).map((b) => b.w));
+    if (bankWords.size !== (round.bank || []).length) fail(`${label} / round ${i + 1} : mots dupliqués dans la banque`);
     for (const w of round.solution || []) {
       if (!bankWords.has(w)) fail(`${label} / round ${i + 1} : mot de solution absent de la banque : « ${w} »`);
     }
@@ -95,6 +109,7 @@ function checkNegociation(label, content) {
     for (const b of round.bank || []) {
       if (!validCats.has(b.cat)) fail(`${label} / round ${i + 1} : catégorie inconnue « ${b.cat} »`);
     }
+    if (!round.echoHint || !round.okReaction) fail(`${label} / round ${i + 1} : echoHint/okReaction manquant`);
   }
 }
 
@@ -112,54 +127,71 @@ function checkSurveillance(label, mission) {
     if (!Array.isArray(q.options) || q.correct === undefined || !q.options[q.correct]) {
       fail(`${label} / question ${i + 1} : index de réponse invalide`);
     }
+    if (!q.echoHint) fail(`${label} / question ${i + 1} : echoHint manquant`);
   }
 }
 
-for (const m of C.missions) {
-  const label = m.id;
-  if (missionIds.has(m.id)) fail(`${label} : id de mission dupliqué`);
-  missionIds.add(m.id);
+const allMissionIds = new Set();
+const allIntelIds = new Set();
 
-  for (const k of ["type", "title", "location", "difficulty", "durationMin", "xpBase", "brief", "intelCard", "icon", "typeName", "subtitle"]) {
-    if (m[k] === undefined) fail(`${label} : champ mission manquant « ${k} »`);
-  }
-  for (const k of ["narrative", "context", "intelPreview", "echo"]) {
-    if (!m.brief || !m.brief[k]) fail(`${label} : champ brief manquant « ${k} »`);
-  }
-  if (m.intelCard) {
-    if (intelIds.has(m.intelCard.id)) fail(`${label} : id d'intel dupliqué ${m.intelCard.id}`);
-    intelIds.add(m.intelCard.id);
-    if (!["verb", "vocab", "grammar"].includes(m.intelCard.kind)) fail(`${label} : intelCard.kind invalide`);
-  }
-
-  if (m.type === "percee") checkPercee(label, m);
-  else if (m.type === "infiltration") checkInfiltration(label, m);
-  else if (m.type === "negociation") checkNegociation(label, m);
-  else if (m.type === "surveillance") checkSurveillance(label, m);
-  else if (m.type === "extraction") {
-    if (!Array.isArray(m.phases) || m.phases.length < 2) fail(`${label} : phases boss manquantes`);
-    for (const phase of m.phases || []) {
-      const plabel = `${label} / ${phase.title}`;
-      if (phase.kind === "percee") checkPercee(plabel, phase);
-      else if (phase.kind === "infiltration") checkInfiltration(plabel, phase);
-      else if (phase.kind === "negociation") checkNegociation(plabel, phase);
-      else fail(`${plabel} : kind de phase inconnu « ${phase.kind} »`);
+for (const arc of Object.values(Codex.ARCS)) {
+  if (!arc.l1 || !["fr", "en"].includes(arc.l1)) fail(`Arc ${arc.id} : l1 invalide`);
+  if (!arc.language || !arc.language.tts) fail(`Arc ${arc.id} : language.tts manquant`);
+  if (!arc.zone || !arc.zone.name) fail(`Arc ${arc.id} : zone manquante`);
+  for (const pool of ["hq", "success", "perfect", "warning", "urgent"]) {
+    if (!arc.echo || !Array.isArray(arc.echo[pool]) || arc.echo[pool].length === 0) {
+      fail(`Arc ${arc.id} : pool ECHO manquant « ${pool} »`);
     }
-    if (!m.endings || !m.endings.perfect || !m.endings.bad) fail(`${label} : fins de boss manquantes`);
-  } else {
-    fail(`${label} : type de mission inconnu « ${m.type} »`);
+  }
+  if (!Array.isArray(arc.dailyFallback) || arc.dailyFallback.length < 3) fail(`Arc ${arc.id} : dailyFallback insuffisant`);
+  for (const [i, q] of (arc.dailyFallback || []).entries()) {
+    if (!q.options || !q.options[q.correct]) fail(`Arc ${arc.id} / dailyFallback ${i + 1} : réponse invalide`);
+  }
+
+  for (const m of arc.missions) {
+    const label = m.id;
+    if (allMissionIds.has(m.id)) fail(`${label} : id de mission dupliqué`);
+    allMissionIds.add(m.id);
+
+    for (const k of ["type", "title", "location", "difficulty", "durationMin", "xpBase", "brief", "intelCard", "icon", "typeName", "subtitle"]) {
+      if (m[k] === undefined) fail(`${label} : champ mission manquant « ${k} »`);
+    }
+    for (const k of ["narrative", "context", "intelPreview", "echo"]) {
+      if (!m.brief || !m.brief[k]) fail(`${label} : champ brief manquant « ${k} »`);
+    }
+    if (m.intelCard) {
+      if (allIntelIds.has(m.intelCard.id)) fail(`${label} : id d'intel dupliqué ${m.intelCard.id}`);
+      allIntelIds.add(m.intelCard.id);
+      if (!["verb", "vocab", "grammar"].includes(m.intelCard.kind)) fail(`${label} : intelCard.kind invalide`);
+      if (Array.isArray(m.intelCard.quiz)) {
+        for (const [i, q] of m.intelCard.quiz.entries()) {
+          if (!q.options || q.options[q.a] === undefined) fail(`${label} / quiz ${i + 1} : index de réponse invalide`);
+        }
+      }
+    }
+
+    if (m.type === "percee") checkPercee(label, m);
+    else if (m.type === "infiltration") checkInfiltration(label, m);
+    else if (m.type === "negociation") checkNegociation(label, m);
+    else if (m.type === "surveillance") checkSurveillance(label, m);
+    else if (m.type === "extraction") {
+      if (!Array.isArray(m.phases) || m.phases.length < 2) fail(`${label} : phases boss manquantes`);
+      for (const phase of m.phases || []) {
+        const plabel = `${label} / ${phase.title}`;
+        if (phase.kind === "percee") checkPercee(plabel, phase);
+        else if (phase.kind === "infiltration") checkInfiltration(plabel, phase);
+        else if (phase.kind === "negociation") checkNegociation(plabel, phase);
+        else fail(`${plabel} : kind de phase inconnu « ${phase.kind} »`);
+      }
+      if (!m.endings || !m.endings.perfect || !m.endings.bad) fail(`${label} : fins de boss manquantes`);
+    } else {
+      fail(`${label} : type de mission inconnu « ${m.type} »`);
+    }
   }
 }
-
-for (const [i, q] of C.dailyFallback.entries()) {
-  if (!q.options || !q.options[q.correct]) fail(`dailyFallback ${i + 1} : réponse invalide`);
-}
-
-if (C.levels.length !== 5) fail("Il faut exactement 5 niveaux d'agent (GDD §10.2)");
-if (C.countries.length !== 10) fail("Il faut 10 pays Phase 1 (GDD §3.2)");
 
 if (failures === 0) {
-  ok(`${C.missions.length} missions valides, ${intelIds.size} cartes intel, ${C.medals.length} médailles`);
+  ok(`${allMissionIds.size} missions valides, ${allIntelIds.size} cartes intel, ${C.medals.length} médailles`);
   console.log("\nVALIDATION RÉUSSIE ✓\n");
 } else {
   console.error(`\nVALIDATION ÉCHOUÉE — ${failures} erreur(s)\n`);

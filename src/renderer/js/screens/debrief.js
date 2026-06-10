@@ -10,6 +10,7 @@ window.Codex = window.Codex || {};
 
   Codex.router.register("debrief", (screenEl, { mission, result }) => {
     const st = Codex.state;
+    const arc = Codex.arc();
     const r = result;
 
     // Fin narrative pour le boss (GDD §5.5)
@@ -20,22 +21,22 @@ window.Codex = window.Codex || {};
         .find((e) => score >= e.min);
     }
 
-    const echoPool = r.perfect ? Codex.CONTENT.echo.perfect : Codex.CONTENT.echo.success;
+    const echoPool = r.perfect ? arc.echo.perfect : arc.echo.success;
     const echoLine = echoPool[Math.floor(Math.random() * echoPool.length)];
 
     const card = el(`
       <div class="debrief-card">
-        ${r.levelUp ? `<div class="levelup-banner">▲ PROMOTION — NIVEAU ${esc(r.levelUp.name)} ▲</div>` : ""}
+        ${r.levelUp ? `<div class="levelup-banner">${esc(Codex.t("debrief.promotion", { lvl: Codex.t(`lvl.${r.levelUp.key}`) }))}</div>` : ""}
         <div class="debrief-head">
           <div class="debrief-check">${ending ? "🎯" : "✅"}</div>
-          <div class="h2 mt-1">${esc(ending ? ending.title : "OPÉRATION " + mission.title.replace(/^Opération\s+/i, ""))}</div>
-          <div class="small muted">${ending ? "" : "Mission accomplie"} · Score : <span class="data cyan">${r.score}%</span></div>
+          <div class="h2 mt-1">${esc(ending ? ending.title : mission.title.toUpperCase())}</div>
+          <div class="small muted">${ending ? "" : esc(Codex.t("debrief.done")) + " · "}${esc(Codex.t("debrief.score"))} : <span class="data cyan">${r.score}%</span></div>
         </div>
         ${ending ? `<div class="debrief-section" style="font-style:italic">${esc(ending.text)}</div>` : ""}
         <div class="debrief-section">
-          <div class="label mb-1">INTEL SÉCURISÉE</div>
+          <div class="label mb-1">${esc(Codex.t("debrief.intelSecured"))}</div>
           <div class="green">✓ ${esc(mission.intelCard.lemma)} — ${esc(mission.intelCard.tag)}</div>
-          ${r.culturalAwarded ? `<div class="amber">✓ +1 Cultural Intel bonus</div>` : ""}
+          ${r.culturalAwarded ? `<div class="amber">${esc(Codex.t("debrief.culturalBonus"))}</div>` : ""}
         </div>
         <div class="debrief-section">
           <div class="row spread">
@@ -50,18 +51,18 @@ window.Codex = window.Codex || {};
           <div class="echo-text">${esc(echoLine)}</div>
         </div>
         <div class="debrief-section row" style="justify-content:center; border:none">
-          <button class="btn btn-ghost" data-go="vault">VOIR L'INTEL</button>
-          <button class="btn" data-go="hq">RETOUR AU QG</button>
+          <button class="btn btn-ghost" data-go="vault">${esc(Codex.t("debrief.seeIntel"))}</button>
+          <button class="btn" data-go="hq">${esc(Codex.t("debrief.returnHq"))}</button>
         </div>
       </div>`);
 
     // Détail XP
     const details = [];
-    details.push(`Base ${r.xpBreakdown.base}`);
-    if (r.xpBreakdown.fragments) details.push(`Fragments +${r.xpBreakdown.fragments}`);
-    if (r.xpBreakdown.cultural) details.push(`Cultural Intel +${r.xpBreakdown.cultural}`);
-    if (r.xpBreakdown.perfect) details.push(`Sans erreur +${r.xpBreakdown.perfect}`);
-    if (r.xpBreakdown.silent) details.push(`Sans ECHO +${r.xpBreakdown.silent}`);
+    details.push(Codex.t("debrief.xpBase", { n: r.xpBreakdown.base }));
+    if (r.xpBreakdown.fragments) details.push(Codex.t("debrief.xpFrag", { n: r.xpBreakdown.fragments }));
+    if (r.xpBreakdown.cultural) details.push(Codex.t("debrief.xpCult", { n: r.xpBreakdown.cultural }));
+    if (r.xpBreakdown.perfect) details.push(Codex.t("debrief.xpPerfect", { n: r.xpBreakdown.perfect }));
+    if (r.xpBreakdown.silent) details.push(Codex.t("debrief.xpSilent", { n: r.xpBreakdown.silent }));
     card.querySelector(".xp-detail").textContent = details.join(" · ");
 
     // Médailles
@@ -71,7 +72,7 @@ window.Codex = window.Codex || {};
       if (!def) return;
       setTimeout(() => {
         Codex.audio.sfx.medal();
-        medalsZone.appendChild(el(`<span class="medal-pop">${esc(def.icon)} ${esc(def.name)}</span>`));
+        medalsZone.appendChild(el(`<span class="medal-pop">${esc(def.icon)} ${esc(Codex.t(`medal.${id}`))}</span>`));
       }, 600 + i * 500);
     });
 

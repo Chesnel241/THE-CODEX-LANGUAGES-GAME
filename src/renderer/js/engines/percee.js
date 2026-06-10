@@ -1,7 +1,8 @@
 /**
  * THE CODEX — Moteur LA PERCÉE (GDD §5.1).
  * Fragments cachés dans la scène → popup d'intel → Carte Intel finale.
- * Pas d'échec possible : l'exploration est toujours récompensée.
+ * Pas d'échec possible. Musique : exploration → tension (2 frag.) →
+ * climax (dernier fragment) → sting de victoire (GDD §11.2).
  */
 "use strict";
 window.Codex = window.Codex || {};
@@ -12,7 +13,7 @@ Codex.engines = Codex.engines || {};
 
   /**
    * Monte le moteur dans screenEl.
-   * @param opts { content, hints, onDone } — content : { scene, fragments, cultural?, brief? }
+   * @param opts { content, hints, echoIntro, onDone } — content : { scene, fragments, cultural? }
    */
   function mount(screenEl, opts) {
     const { content, onDone } = opts;
@@ -23,12 +24,13 @@ Codex.engines = Codex.engines || {};
     let culturalFound = 0;
 
     screenEl.innerHTML = "";
+    Codex.music.play(Codex.arc().theme, "exploration");
 
     const dots = fragDots(total);
     const topbar = el(`
       <div class="terrain-topbar">
         <div>
-          <div class="label">TERRAIN ACTIF</div>
+          <div class="label">${esc(Codex.t("terrain.active"))}</div>
           <div class="data">${esc(content.scene.name)}</div>
         </div>
       </div>`);
@@ -38,12 +40,12 @@ Codex.engines = Codex.engines || {};
     const scene = buildScene(content.scene);
     screenEl.appendChild(scene);
 
-    const echo = echoBar(opts.echoIntro || "Scannez la zone. Les fragments pulsent en cyan.", {
+    const echo = echoBar(opts.echoIntro || Codex.t("echo.scan"), {
       hints,
       onHint: () => {
         const next = content.fragments.find((f) => !f.collected);
-        if (next) echo.say(`Concentrez-vous sur : ${next.label}. L'intel y est dissimulée.`);
-        else echo.say("Tous les fragments sont sécurisés, Agent.");
+        if (next) echo.say(Codex.t("echo.focusOn", { label: next.label }));
+        else echo.say(Codex.t("echo.allSecured"));
       },
     });
     screenEl.appendChild(echo.node);
@@ -55,12 +57,12 @@ Codex.engines = Codex.engines || {};
       const popup = el(`
         <div class="fragment-popup">
           <div class="fragment-popup-head">
-            <span class="label cyan">⚡ FRAGMENT INTERCEPTÉ</span>
+            <span class="label cyan">${esc(Codex.t("terrain.fragIntercepted"))}</span>
             <span class="data muted">[${collected + 1}/${total}]</span>
           </div>
           <div class="fragment-section fragment-scene">${esc(frag.sceneText)}</div>
           <div class="fragment-section">
-            <div class="label mb-1">INTEL DÉCODÉE</div>
+            <div class="label mb-1">${esc(Codex.t("terrain.intelDecoded"))}</div>
             <div class="fragment-intel">${esc(frag.intel)}</div>
             <div class="small muted mt-1">${esc(frag.rule)}</div>
           </div>
@@ -69,7 +71,7 @@ Codex.engines = Codex.engines || {};
             <div class="echo-text">${esc(frag.echo)}</div>
           </div>
           <div class="fragment-footer">
-            <button class="btn btn-green">✓ SÉCURISER CE FRAGMENT</button>
+            <button class="btn btn-green">${esc(Codex.t("terrain.secure"))}</button>
           </div>
         </div>`);
       Codex.audio.sfx.popup();
@@ -87,10 +89,12 @@ Codex.engines = Codex.engines || {};
         if (collected === total) {
           finish();
         } else if (collected === total - 1) {
-          echo.say("Dernier fragment, Agent. L'intel est presque complète.");
+          Codex.music.setState("climax");
+          echo.say(Codex.t("echo.lastFrag"));
           Codex.audio.sfx.tension();
         } else {
-          echo.say(`Fragment sécurisé. ${total - collected} restant${total - collected > 1 ? "s" : ""}.`);
+          if (collected >= 2) Codex.music.setState("tension");
+          echo.say(Codex.t("echo.fragSecured", { n: total - collected }));
         }
       });
     }
@@ -100,7 +104,7 @@ Codex.engines = Codex.engines || {};
       const popup = el(`
         <div class="fragment-popup" style="border-color: var(--accent-amber)">
           <div class="fragment-popup-head">
-            <span class="label amber">🌍 CULTURAL INTEL</span>
+            <span class="label amber">${esc(Codex.t("terrain.cultural"))}</span>
             <span class="data amber">+${cult.xp} XP</span>
           </div>
           <div class="fragment-section">
@@ -108,7 +112,7 @@ Codex.engines = Codex.engines || {};
             <div>${esc(cult.text)}</div>
           </div>
           <div class="fragment-footer">
-            <button class="btn">ARCHIVER</button>
+            <button class="btn">${esc(Codex.t("terrain.archive"))}</button>
           </div>
         </div>`);
       const m = modal(popup, { closable: false });
@@ -117,7 +121,7 @@ Codex.engines = Codex.engines || {};
         m.close();
         hotspotEl.classList.add("collected");
         culturalFound += 1;
-        echo.say("Intel culturelle archivée. Ces détails font les meilleures couvertures.");
+        echo.say(Codex.t("echo.culturalArchived"));
       });
     }
 
@@ -150,13 +154,14 @@ Codex.engines = Codex.engines || {};
     }
 
     function finish() {
+      Codex.music.stop(0.6);
       Codex.audio.sfx.vaultOpen();
       const crack = el(`
         <div class="modal-overlay">
           <div class="center">
             <div style="font-size:54px">🔓</div>
-            <div class="h1 mt-1">VAULT CRACK</div>
-            <div class="label mt-1">INTEL COMPLÈTE — DÉCLASSIFICATION…</div>
+            <div class="h1 mt-1">${esc(Codex.t("terrain.vaultCrack"))}</div>
+            <div class="label mt-1">${esc(Codex.t("terrain.declassifying"))}</div>
           </div>
         </div>`);
       screenEl.appendChild(crack);

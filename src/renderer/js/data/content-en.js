@@ -1,47 +1,17 @@
 /**
- * THE CODEX — Base de contenu Phase 1 : Anglais UK · Londres.
- * Structure conforme au schéma de mission du GDD §13.3.
+ * THE CODEX — Arc ANGLAIS (UK) · Londres.
+ * L1 (langue de narration) : français — pour les agents francophones.
+ * Schéma de mission conforme au GDD §13.3.
  */
 "use strict";
 window.Codex = window.Codex || {};
 
-Codex.CONTENT = {
-  language: { id: "en-UK", name: "Anglais (UK)", flag: "🇬🇧", country: "Royaume-Uni" },
-
-  // GDD §10.2
-  levels: [
-    { id: 1, name: "RECRUE", xp: 0, hints: Infinity },
-    { id: 2, name: "OPÉRATEUR", xp: 500, hints: 3 },
-    { id: 3, name: "ÉLITE", xp: 1500, hints: 1 },
-    { id: 4, name: "FANTÔME", xp: 3500, hints: 0 },
-    { id: 5, name: "LÉGENDE", xp: 7000, hints: 0 },
-  ],
-
-  // GDD §3.2 — positions sur la carte stylisée (viewBox 1000×520)
-  countries: [
-    { id: "uk", flag: "🇬🇧", name: "Royaume-Uni", lang: "Anglais (UK)", x: 468, y: 138, active: true },
-    { id: "us", flag: "🇺🇸", name: "États-Unis", lang: "Anglais (US)", x: 220, y: 195, active: false },
-    { id: "fr", flag: "🇫🇷", name: "France", lang: "Français", x: 487, y: 172, active: false },
-    { id: "es", flag: "🇪🇸", name: "Espagne", lang: "Espagnol", x: 462, y: 205, active: false },
-    { id: "br", flag: "🇧🇷", name: "Brésil", lang: "Portugais (BR)", x: 320, y: 350, active: false },
-    { id: "de", flag: "🇩🇪", name: "Allemagne", lang: "Allemand", x: 520, y: 150, active: false },
-    { id: "jp", flag: "🇯🇵", name: "Japon", lang: "Japonais", x: 858, y: 200, active: false },
-    { id: "cn", flag: "🇨🇳", name: "Chine", lang: "Mandarin", x: 770, y: 215, active: false },
-    { id: "sa", flag: "🇸🇦", name: "Arabie Saoudite", lang: "Arabe (MSA)", x: 600, y: 250, active: false },
-    { id: "kr", flag: "🇰🇷", name: "Corée du Sud", lang: "Coréen", x: 828, y: 195, active: false },
-  ],
-
-  // GDD §10.4
-  medals: [
-    { id: "premier_contact", icon: "🛸", name: "Premier Contact", desc: "Première mission complétée" },
-    { id: "precision", icon: "🎯", name: "Précision", desc: "Mission parfaite — aucune erreur, aucune aide" },
-    { id: "fantome", icon: "🥷", name: "Fantôme", desc: "Infiltration sans déclencher de Suspicion" },
-    { id: "silence_radio", icon: "🔕", name: "Silence Radio", desc: "Mission complétée sans utiliser ECHO" },
-    { id: "eclair", icon: "⚡", name: "Éclair", desc: "Mission complétée en moins de 50 % du temps estimé" },
-    { id: "explorateur", icon: "🔭", name: "Explorateur", desc: "Tous les Cultural Intel de la zone trouvés" },
-  ],
-
-  zone: { id: "london", name: "Londres", level: "Recrue", domain: "Verbes du quotidien · Présent simple" },
+Codex.ARCS["en-UK"] = {
+  id: "en-UK",
+  l1: "fr",
+  language: { id: "en-UK", name: "Anglais (UK)", flag: "🇬🇧", country: "Royaume-Uni", tts: "en-GB" },
+  theme: "en-UK",
+  zone: { id: "london", name: "Londres", domain: "Verbes du quotidien · Présent simple" },
 
   echo: {
     hq: [
@@ -142,6 +112,7 @@ Codex.CONTENT = {
         phonetics: "/iːt/",
         tag: "VERBE IRRÉGULIER ⚠",
         speakText: "eat, ate, eaten. She eats here every week.",
+        flashback: "Le Crown, un soir de pluie. Une habituée sourit au serveur : « I always eat the salmon here. » Son ami lève les yeux au ciel : « He eats the same thing every single time. » Le chef, depuis sa cuisine, observe la salle…",
         table: [
           { label: "PRÉSENT SIMPLE", value: "I/You/We eat\nHe/She eats ⚡" },
           { label: "PASSÉ SIMPLE", value: "ate\n(irrégulier !)" },
@@ -149,6 +120,11 @@ Codex.CONTENT = {
           { label: "FUTUR / COND.", value: "will eat\ngoing to eat\nwould eat" },
         ],
         examples: ["She eats here every week.", "We ate at 8.", "Have you eaten?"],
+        quiz: [
+          { q: "Quel est le passé simple de EAT ?", options: ["ate", "eated", "eaten"], a: 0 },
+          { q: "« He ____ the same thing every time. »", options: ["eat", "eats", "eating"], a: 1 },
+          { q: "« Have you ____ ? »", options: ["ate", "eat", "eaten"], a: 2 },
+        ],
       },
     },
 
@@ -249,6 +225,7 @@ Codex.CONTENT = {
         phonetics: "registre informel · Royaume-Uni",
         tag: "VOCABULAIRE ACTIF — SOCIAL",
         speakText: "A pint of bitter, please. You alright, mate? It's my round. One for the road.",
+        flashback: "Le Red Lion, jeudi soir. La cloche du « last orders » sonne. Un habitué lève son verre vers vous : « One for the road, then? » Au fond de la salle, un colis change discrètement de mains…",
         entries: [
           { en: "A pint of..., please.", note: "La commande standard au comptoir — courte et polie." },
           { en: "You alright, mate?", note: "Salutation courante, pas une question de santé. Réponse : « Yeah, good thanks, you? »" },
@@ -342,6 +319,7 @@ Codex.CONTENT = {
         phonetics: "registre professionnel · écrit",
         tag: "COMPRÉHENSION ÉCRITE — EMAIL FORMEL",
         speakText: "The shipment arrives at dawn. The foreman signs the delivery note.",
+        flashback: "Planque de Camden, 2h du matin. L'écran clignote : « INTERCEPTION RÉUSSIE — CANAL 7 ». L'email de BABEL CORP s'affiche ligne par ligne. Quelque part à Greenwich, un camion change son itinéraire…",
         entries: [
           { en: "shipment /ˈʃɪpmənt/", note: "Une expédition de marchandises." },
           { en: "lorry /ˈlɒri/", note: "Camion (UK). Les Américains disent « truck »." },
@@ -445,6 +423,7 @@ Codex.CONTENT = {
         phonetics: "Sujet → Verbe → Complément",
         tag: "GRAMMAIRE OPÉRATIONNELLE",
         speakText: "If you help us, we will protect you.",
+        flashback: "Borough Market, 17h. Whitmore tourne nerveusement sa tasse de café. Chacune de vos phrases est pesée, jaugée, vérifiée. À la quatrième, il glisse une clé USB sur la table : « Don't make me regret this. »",
         table: [
           { label: "ORDRE DE BASE", value: "Sujet + Verbe + Complément\nShe works for Babel Corp." },
           { label: "ACCORD 3ᵉ PERS.", value: "He/She/It → verbe + S\nShe works · He eats" },
@@ -452,6 +431,10 @@ Codex.CONTENT = {
           { label: "CONDITIONNEL RÉEL", value: "If + présent,\nwill + base verbale" },
         ],
         examples: ["We have the documents.", "She works for Babel Corp.", "If you help us, we will protect you."],
+        quiz: [
+          { q: "« She ____ for Babel Corp. »", options: ["work", "works", "working"], a: 1 },
+          { q: "Complétez : « If you help us, we ____ protect you. »", options: ["will", "would", "did"], a: 0 },
+        ],
       },
     },
 
@@ -526,6 +509,7 @@ Codex.CONTENT = {
         phonetics: "/ɡəʊ/",
         tag: "VERBE IRRÉGULIER ⚠ — TOP 3 DE LA LANGUE",
         speakText: "go, went, gone. The last train goes at half past midnight.",
+        flashback: "Embankment, minuit moins le quart. Le panneau clignote : « The last train goes at 00:30. » Sur le quai désert, le coursier jette un papier froissé. Vous comptez jusqu'à trois, puis vous le ramassez…",
         table: [
           { label: "PRÉSENT SIMPLE", value: "I/You/We go\nHe/She goes ⚡" },
           { label: "PASSÉ SIMPLE", value: "went\n(irrégulier total !)" },
@@ -533,6 +517,11 @@ Codex.CONTENT = {
           { label: "FUTUR / COND.", value: "will go\ngoing to go\nwould go" },
         ],
         examples: ["The last train goes at 00:30.", "I went there at nine.", "She has gone home."],
+        quiz: [
+          { q: "Quel est le passé simple de GO ?", options: ["went", "goed", "gone"], a: 0 },
+          { q: "« She has ____ home. »", options: ["went", "gone", "go"], a: 1 },
+          { q: "« The last train ____ at 00:30. »", options: ["go", "gos", "goes"], a: 2 },
+        ],
       },
     },
 
@@ -586,7 +575,7 @@ Codex.CONTENT = {
               line: "Wonderful view, isn't it? Have you been here before?",
               context: "Il vous tend une coupe de champagne, l'air affable mais observateur.",
               choices: [
-                { text: "Never — but I have eaten at the restaurant downstairs.", correct: true, reaction: "« Excellent choice. » Il vous présente au groupe. Présent perfect impeccable." },
+                { text: "Never — but I have eaten at the restaurant downstairs.", correct: true, reaction: "« Excellent choice. » Il vous présente au groupe. Present perfect impeccable." },
                 { text: "Yes, I goed here last year.", reaction: "« Goed »… Son sourire se fige imperceptiblement.", suspicion: 20 },
                 { text: "I am here for watch someone.", reaction: "Il repose sa coupe et s'éloigne lentement.", suspicion: 30 },
               ],
@@ -666,10 +655,10 @@ Codex.CONTENT = {
         },
       ],
       endings: {
-        perfect: { min: 90, title: "EXTRACTION PARFAITE", text: "Aucune trace. La liste est entre les mains de l'Institut et BABEL CORP ignore même votre existence. Les premières lignes du dossier PARIS apparaissent sur votre terminal…", },
-        good: { min: 70, title: "EXTRACTION RÉUSSIE", text: "Quelques complications, mais la liste est sécurisée. L'Institut ouvre le dossier de votre prochaine destination.", },
-        rough: { min: 50, title: "EXTRACTION CHAOTIQUE", text: "Objectif atteint de justesse. BABEL CORP sait désormais qu'un agent opère à Londres. Restez sur vos gardes.", },
-        bad: { min: 0, title: "EXTRACTION COMPROMISE", text: "La liste est incomplète et votre couverture fragilisée. L'Institut recommande une mission de consolidation avant toute nouvelle opération.", },
+        perfect: { min: 90, title: "EXTRACTION PARFAITE", text: "Aucune trace. La liste est entre les mains de l'Institut et BABEL CORP ignore même votre existence. Les premières lignes du dossier PARIS apparaissent sur votre terminal…" },
+        good: { min: 70, title: "EXTRACTION RÉUSSIE", text: "Quelques complications, mais la liste est sécurisée. L'Institut ouvre le dossier de votre prochaine destination." },
+        rough: { min: 50, title: "EXTRACTION CHAOTIQUE", text: "Objectif atteint de justesse. BABEL CORP sait désormais qu'un agent opère à Londres. Restez sur vos gardes." },
+        bad: { min: 0, title: "EXTRACTION COMPROMISE", text: "La liste est incomplète et votre couverture fragilisée. L'Institut recommande une mission de consolidation avant toute nouvelle opération." },
       },
       intelCard: {
         kind: "grammar",
@@ -678,6 +667,7 @@ Codex.CONTENT = {
         phonetics: "synthèse opérationnelle · Londres",
         tag: "ARC LONDRES — COMPLET",
         speakText: "You have completed the London operation. Well done, Agent.",
+        flashback: "Le Shard, 32ᵉ étage. La liste posée sur la table, l'agent de liaison disparue dans la foule. En bas, Londres scintille. Votre oreillette grésille : « Extraction confirmée, Agent. Paris vous attend. »",
         table: [
           { label: "VERBES CRAQUÉS", value: "EAT — ate — eaten\nGO — went — gone" },
           { label: "PRÉSENT 3ᵉ PERS.", value: "She works · He eats\nThe train goes" },
@@ -689,7 +679,7 @@ Codex.CONTENT = {
     },
   ],
 
-  // Banque de secours pour le Daily Signal (si coffre presque vide)
+  // Banque de secours pour le Daily Signal
   dailyFallback: [
     { q: "Quel est le passé simple de EAT ?", options: ["ate", "eated", "eaten"], correct: 0 },
     { q: "« He ____ the same thing every time. »", options: ["eat", "eats", "eating"], correct: 1 },

@@ -1,5 +1,6 @@
 /**
  * THE CODEX — Paramètres (GDD §7.11).
+ * Volumes musique/SFX séparés, ambiance, accessibilité, langue d'interface.
  */
 "use strict";
 window.Codex = window.Codex || {};
@@ -27,69 +28,114 @@ window.Codex = window.Codex || {};
     return row;
   }
 
+  function sliderRow(label, desc, value, onInput, onChange) {
+    const row = el(`
+      <div class="setting-row">
+        <div>
+          <div style="font-weight:600">${esc(label)}</div>
+          <div class="small muted">${esc(desc)}</div>
+        </div>
+        <input type="range" min="0" max="100" value="${value}" aria-label="${esc(label)}" />
+      </div>`);
+    const input = row.querySelector("input");
+    input.addEventListener("input", (e) => onInput(Number(e.target.value)));
+    if (onChange) input.addEventListener("change", (e) => onChange(Number(e.target.value)));
+    return row;
+  }
+
   Codex.router.register("settings", (screenEl) => {
     const st = Codex.state;
     const s = st.data.settings;
 
-    screenEl.appendChild(pageHeader("⚙️ Paramètres"));
+    screenEl.appendChild(pageHeader(Codex.t("set.title")));
     const scroll = el(`<div class="screen-scroll"></div>`);
     const wrap = el(`<div class="settings-wrap"></div>`);
 
-    wrap.appendChild(el(`<div class="label">AUDIO</div>`));
+    // ----- AUDIO -----
+    wrap.appendChild(el(`<div class="label">${esc(Codex.t("set.audio"))}</div>`));
 
-    const volRow = el(`
-      <div class="setting-row">
-        <div>
-          <div style="font-weight:600">Volume global</div>
-          <div class="small muted">Effets, ambiances et signaux ECHO</div>
-        </div>
-        <input type="range" min="0" max="100" value="${s.volume}" aria-label="Volume global" />
-      </div>`);
-    volRow.querySelector("input").addEventListener("input", (e) => {
-      s.volume = Number(e.target.value);
+    wrap.appendChild(sliderRow(Codex.t("set.music"), Codex.t("set.musicSub"), s.volMusic, (v) => {
+      s.volMusic = v;
       Codex.audio.applyVolume();
       st.save();
-    });
-    volRow.querySelector("input").addEventListener("change", () => Codex.audio.sfx.good());
-    wrap.appendChild(volRow);
+      if (v > 0 && !Codex.music.state()) Codex.music.play(Codex.arc().theme, "calm");
+      if (v === 0) Codex.music.stop(0.3);
+    }));
 
-    wrap.appendChild(toggleRow("Ambiance sonore", "Drone atmosphérique du QG et des terrains", s.ambience, (on) => {
+    wrap.appendChild(sliderRow(Codex.t("set.sfx"), Codex.t("set.sfxSub"), s.volSfx, (v) => {
+      s.volSfx = v;
+      Codex.audio.applyVolume();
+      st.save();
+    }, () => Codex.audio.sfx.good()));
+
+    wrap.appendChild(toggleRow(Codex.t("set.ambience"), Codex.t("set.ambienceSub"), s.ambience, (on) => {
       s.ambience = on;
       st.save();
       if (on) Codex.audio.startAmbience();
       else Codex.audio.stopAmbience();
     }));
 
-    wrap.appendChild(el(`<div class="label mt-2">ACCESSIBILITÉ</div>`));
-    wrap.appendChild(toggleRow("Animations réduites", "Désactive pulsations, glitchs et transitions longues", s.reducedMotion, (on) => {
+    // ----- ACCESSIBILITÉ & LANGUE -----
+    wrap.appendChild(el(`<div class="label mt-2">${esc(Codex.t("set.access"))}</div>`));
+
+    wrap.appendChild(toggleRow(Codex.t("set.reduced"), Codex.t("set.reducedSub"), s.reducedMotion, (on) => {
       s.reducedMotion = on;
       document.body.classList.toggle("reduced-motion", on);
       st.save();
     }));
 
-    wrap.appendChild(el(`<div class="label mt-2">DONNÉES</div>`));
+    const langRow = el(`
+      <div class="setting-row">
+        <div>
+          <div style="font-weight:600">${esc(Codex.t("set.lang"))}</div>
+          <div class="small muted">${esc(Codex.t("set.langSub"))}</div>
+        </div>
+        <div class="seg-group">
+          <button class="seg-btn ${st.l1() === "fr" ? "on" : ""}" data-l1="fr">🇫🇷 Français</button>
+          <button class="seg-btn ${st.l1() === "en" ? "on" : ""}" data-l1="en">🇬🇧 English</button>
+        </div>
+      </div>`);
+    langRow.querySelectorAll(".seg-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const newL1 = btn.dataset.l1;
+        if (newL1 === st.l1()) return;
+        Codex.audio.sfx.stamp();
+        st.data.agent.l1 = newL1;
+        Codex.i18n.set(newL1);
+        // Bascule sur l'arc dont la narration correspond à la nouvelle L1
+        const match = Object.values(Codex.ARCS).find((a) => a.l1 === newL1);
+        if (match) st.setL2(match.id);
+        st.save();
+        Codex.router.go("settings");
+      });
+    });
+    wrap.appendChild(langRow);
+
+    // ----- DONNÉES -----
+    wrap.appendChild(el(`<div class="label mt-2">${esc(Codex.t("set.data"))}</div>`));
     const resetRow = el(`
       <div class="setting-row">
         <div>
-          <div style="font-weight:600">Réinitialiser la progression</div>
-          <div class="small muted">Efface XP, Coffre-Fort, médailles — irréversible</div>
+          <div style="font-weight:600">${esc(Codex.t("set.reset"))}</div>
+          <div class="small muted">${esc(Codex.t("set.resetSub"))}</div>
         </div>
-        <button class="btn btn-danger" style="padding:10px 18px">EFFACER</button>
+        <button class="btn btn-danger" style="padding:10px 18px">${esc(Codex.t("set.resetBtn"))}</button>
       </div>`);
     resetRow.querySelector(".btn").addEventListener("click", () => {
       const popup = el(`
         <div class="fragment-popup" style="border-color: var(--accent-red)">
-          <div class="fragment-popup-head"><span class="label red">⚠ CONFIRMATION REQUISE</span></div>
-          <div class="fragment-section">Toute votre progression sera définitivement effacée. L'Institut ne conserve aucune copie. Continuer ?</div>
+          <div class="fragment-popup-head"><span class="label red">${esc(Codex.t("set.confirmTitle"))}</span></div>
+          <div class="fragment-section">${esc(Codex.t("set.confirmText"))}</div>
           <div class="fragment-footer">
-            <button class="btn btn-muted cancel">ANNULER</button>
-            <button class="btn btn-danger confirm">TOUT EFFACER</button>
+            <button class="btn btn-muted cancel">${esc(Codex.t("set.cancel"))}</button>
+            <button class="btn btn-danger confirm">${esc(Codex.t("set.confirmBtn"))}</button>
           </div>
         </div>`);
       const m = modal(popup);
       popup.querySelector(".cancel").addEventListener("click", () => { Codex.audio.sfx.click(); m.close(); });
       popup.querySelector(".confirm").addEventListener("click", async () => {
         Codex.audio.sfx.stamp();
+        Codex.music.stop(0.2);
         await st.reset();
         m.close();
         Codex.router.go("title");
@@ -97,11 +143,7 @@ window.Codex = window.Codex || {};
     });
     wrap.appendChild(resetRow);
 
-    wrap.appendChild(el(`
-      <div class="small muted center mt-2">
-        THE CODEX — données stockées localement, aucune connexion réseau.<br>
-        ECHO IA dynamique (API Claude) : prévue en Phase 2.
-      </div>`));
+    wrap.appendChild(el(`<div class="small muted center mt-2" style="white-space:pre-line">${esc(Codex.t("set.offline"))}</div>`));
 
     scroll.appendChild(wrap);
     screenEl.appendChild(scroll);

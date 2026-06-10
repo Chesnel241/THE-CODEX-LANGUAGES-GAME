@@ -1,62 +1,13 @@
 /**
  * THE CODEX — Daily Agent Signal & Challenge de Révision (GDD §6.2, §6.4, §7.12).
  * Quick Scan : questions générées depuis le Coffre-Fort du joueur
- * (répétition espacée déguisée), banque de secours sinon.
+ * (répétition espacée déguisée), banque de secours de l'arc sinon.
  */
 "use strict";
 window.Codex = window.Codex || {};
 
 (function () {
   const { el, esc } = Codex.ui;
-
-  /** Génère des questions depuis le coffre-fort de l'agent. */
-  function questionsFromVault(count) {
-    const st = Codex.state;
-    const qs = [];
-
-    for (const item of st.data.vault) {
-      const d = item.data;
-      if (item.kind === "verb" && d.table) {
-        const past = d.table.find((t) => t.label.includes("PASSÉ"));
-        if (past) {
-          const correct = past.value.split("\n")[0].trim();
-          qs.push({
-            q: `Quel est le passé simple de ${d.lemma} ?`,
-            options: shuffle3(correct, `${d.lemma.toLowerCase()}ed`, d.lemma.toLowerCase() + "en"),
-            vaultId: item.id,
-          });
-        }
-        if (d.examples && d.examples[0]) {
-          qs.push({
-            q: `Complétez l'usage correct du verbe ${d.lemma} :`,
-            options: shuffle3(d.examples[0], d.examples[0].replace(/\b(eats|goes|ate|went)\b/i, (m) => m + "s"), d.examples[0].replace(/\b(eat|go)\b/i, (m) => m + "ed")),
-            vaultId: item.id,
-          });
-        }
-      }
-      if (item.kind === "vocab" && d.entries) {
-        const entry = d.entries[Math.floor(Math.random() * d.entries.length)];
-        const others = d.entries.filter((e) => e !== entry).map((e) => e.en);
-        if (others.length >= 2) {
-          qs.push({
-            q: `Quelle expression correspond à : « ${entry.note} »`,
-            options: shuffle3(entry.en, others[0], others[1]),
-            vaultId: item.id,
-          });
-        }
-      }
-    }
-
-    // Mélange et complète avec la banque de secours
-    const picked = shuffle(qs).slice(0, count);
-    if (picked.length < count) {
-      for (const fb of shuffle(Codex.CONTENT.dailyFallback)) {
-        if (picked.length >= count) break;
-        picked.push({ q: fb.q, options: fb.options.map((t, i) => ({ t, ok: i === fb.correct })) });
-      }
-    }
-    return picked;
-  }
 
   function shuffle(arr) {
     const a = arr.slice();
@@ -74,6 +25,46 @@ window.Codex = window.Codex || {};
       { t: wrong1, ok: false },
       { t: wrong2, ok: false },
     ]);
+  }
+
+  /** Génère des questions depuis le Coffre-Fort de la langue active. */
+  function questionsFromVault(count) {
+    const st = Codex.state;
+    const qs = [];
+
+    for (const item of st.vaultItems()) {
+      const d = item.data;
+      // Quiz pré-écrits sur les cartes (verbes & grammaire)
+      if (Array.isArray(d.quiz)) {
+        for (const q of d.quiz) {
+          qs.push({
+            q: q.q,
+            options: q.options.map((t, i) => ({ t, ok: i === q.a })),
+            vaultId: item.id,
+          });
+        }
+      }
+      // Vocab : associer une expression à sa note d'usage
+      if (item.kind === "vocab" && d.entries && d.entries.length >= 3) {
+        const entry = d.entries[Math.floor(Math.random() * d.entries.length)];
+        const others = shuffle(d.entries.filter((e) => e !== entry)).map((e) => e.en);
+        qs.push({
+          q: `« ${entry.note} »`,
+          options: shuffle3(entry.en, others[0], others[1]),
+          vaultId: item.id,
+        });
+      }
+    }
+
+    // Mélange et complète avec la banque de secours de l'arc
+    const picked = shuffle(qs).slice(0, count);
+    if (picked.length < count) {
+      for (const fb of shuffle(Codex.arc().dailyFallback)) {
+        if (picked.length >= count) break;
+        picked.push({ q: fb.q, options: fb.options.map((t, i) => ({ t, ok: i === fb.correct })) });
+      }
+    }
+    return picked;
   }
 
   Codex.router.register("daily", (screenEl, params = {}) => {
@@ -96,12 +87,12 @@ window.Codex = window.Codex || {};
         <div class="daily-img">📻</div>
         <div class="fragment-section">
           <div class="spread">
-            <span class="label purple">${isChallenge ? "🗄️ CHALLENGE DE RÉVISION" : "📻 SIGNAL QUOTIDIEN"}</span>
+            <span class="label purple">${esc(isChallenge ? Codex.t("daily.challenge") : Codex.t("daily.signal"))}</span>
             <span class="quiz-progress"></span>
           </div>
-          <div class="small muted mt-1">${isChallenge
-            ? "Votre intel mise à l'épreuve — 10 questions issues de votre Coffre-Fort."
-            : `Jour ${st.data.daily.count + 1} de mission active · Quick Scan, ${total} vérifications.`}</div>
+          <div class="small muted mt-1">${esc(isChallenge
+            ? Codex.t("daily.challengeSub")
+            : Codex.t("daily.day", { n: st.data.daily.count + 1, q: total }))}</div>
         </div>
         <div class="quiz-zone fragment-section" style="border:none"></div>
       </div>`);
@@ -132,7 +123,6 @@ window.Codex = window.Codex || {};
             btn.classList.add("bad");
             Codex.audio.sfx.error();
             dots[idx].classList.add("done-ko");
-            // Révéler la bonne réponse
             choices.querySelectorAll(".choice-btn").forEach((b, bi) => {
               if (q.options[bi].ok) b.classList.add("good");
             });
@@ -165,10 +155,8 @@ window.Codex = window.Codex || {};
           <div style="font-size:40px">${pct >= 80 ? "🏅" : pct >= 50 ? "✅" : "📡"}</div>
           <div class="h2 mt-1">${correct}/${questions.length} — ${pct}%</div>
           ${xp ? `<div class="xp-gain mt-1">+${xp} XP</div>` : ""}
-          <div class="small muted mt-1">${pct >= 80
-            ? "Intel parfaitement consolidée, Agent."
-            : "Les fiches concernées sont marquées pour révision dans votre Coffre-Fort."}</div>
-          <button class="btn mt-3">RETOUR AU QG</button>
+          <div class="small muted mt-1">${esc(pct >= 80 ? Codex.t("daily.perfect") : Codex.t("daily.meh"))}</div>
+          <button class="btn mt-3">${esc(Codex.t("daily.return"))}</button>
         </div>`));
       zone.querySelector(".btn").addEventListener("click", () => {
         Codex.audio.sfx.click();

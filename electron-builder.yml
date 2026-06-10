@@ -1,0 +1,36 @@
+appId: com.codexinstitute.thecodex
+productName: THE CODEX
+copyright: © CODEX Institute — Document confidentiel
+
+directories:
+  output: dist
+  buildResources: build
+
+files:
+  - src/**/*
+  - package.json
+  - "!**/*.map"
+
+asar: true
+
+# Durcissement : pas d'auto-update non signé, pas de publication implicite
+publish: null
+
+win:
+  icon: build/icon.ico
+  target:
+    - target: nsis
+      arch: [x64]
+    - target: portable
+      arch: [x64]
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  deleteAppDataOnUninstall: false
+  artifactName: TheCodex-Setup-${version}.exe
+  shortcutName: THE CODEX
+
+portable:
+  artifactName: TheCodex-Portable-${version}.exe

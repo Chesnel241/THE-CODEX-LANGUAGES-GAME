@@ -26,6 +26,8 @@ Le renderer embarque 5 librairies open source, **copiées localement** dans
 | animejs | 3.2.2 | MIT | Micro-animations UI |
 | fuse.js | 6.6.2 | Apache-2.0 | Recherche floue du chatbot ECHO |
 | compromise | 14.x | MIT | Conjugaison anglaise NLP hors base |
+| @fontsource/inter + space-mono | 5.x | OFL-1.1 | Typographie embarquée (GDD §12.3) |
+| lucide-static | 1.x | ISC | Icônes vectorielles (extraites en JS embarqué) |
 
 Contrôles :
 - `src/renderer/vendor/vendor-manifest.json` fige **l'empreinte SHA-256** de

@@ -56,15 +56,17 @@ window.Codex = window.Codex || {};
       const lvl = levelFor(axp);
       const nxt = Codex.CONTENT.levels.find((l) => l.xp > axp);
       const pct = nxt ? Math.min(100, Math.round(((axp - lvl.xp) / (nxt.xp - lvl.xp)) * 100)) : 100;
-      langCard.appendChild(el(`
+      const row = el(`
         <div class="lang-progress-row">
-          <span class="flag">${esc(arc.language.flag)}</span>
+          <span class="lang-flag"></span>
           <div style="width:140px">
             <div style="font-weight:600; font-size:14px">${esc(arc.language.name)}</div>
             <div class="small muted">${esc(Codex.t(`lvl.${lvl.key}`))} · ${axp} XP</div>
           </div>
           <div class="xp-bar"><div class="xp-bar-fill" style="width:${pct}%"></div></div>
-        </div>`));
+        </div>`);
+      row.querySelector(".lang-flag").appendChild(Codex.ui.flag(arc.id, { w: 26 }));
+      langCard.appendChild(row);
     });
     wrap.appendChild(langCard);
 

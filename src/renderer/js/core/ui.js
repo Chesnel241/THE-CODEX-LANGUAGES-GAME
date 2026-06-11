@@ -22,6 +22,34 @@ window.Codex = window.Codex || {};
 
   function stars(n) { return "★".repeat(n) + "☆".repeat(5 - n); }
 
+  /** Icône vectorielle Lucide embarquée (Codex.ICONS). Repli : span vide. */
+  function icon(name, { size = 18, cls = "" } = {}) {
+    const inner = (Codex.ICONS && Codex.ICONS[name]) || "";
+    return el(
+      `<svg class="ic ${esc(cls)}" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" ` +
+      `stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`
+    );
+  }
+
+  /** Mini-drapeau SVG (Codex.FLAGS) — les emojis drapeaux n'existent pas sous Windows. */
+  function flag(code, { w = 22 } = {}) {
+    const key = (Codex.FLAG_BY_LANG && Codex.FLAG_BY_LANG[code]) || code;
+    const inner = (Codex.FLAGS && Codex.FLAGS[key]) || "";
+    return el(`<svg class="flag" width="${w}" height="${Math.round(w * 2 / 3)}" viewBox="0 0 24 16" aria-hidden="true">${inner}</svg>`);
+  }
+
+  /** Icône du type de mission (remplace les emojis du contenu). */
+  const TYPE_ICONS = {
+    percee: "lock-open",
+    infiltration: "drama",
+    surveillance: "file-search",
+    negociation: "handshake",
+    extraction: "target",
+  };
+  function typeIcon(type, opts = {}) {
+    return icon(TYPE_ICONS[type] || "target", { size: opts.size || 24, cls: opts.cls || "" });
+  }
+
   /** Effet machine à écrire (désactivé si animations réduites). */
   function typewrite(node, text, speed = 14) {
     if (Codex.state.data.settings.reducedMotion) {
@@ -38,17 +66,23 @@ window.Codex = window.Codex || {};
     node.dataset.tw = String(id); // permet d'annuler si remplacé
   }
 
-  /** En-tête de page standard avec bouton retour. */
-  function pageHeader(title, backTo = "hq") {
+  /** En-tête de page standard avec bouton retour (chevron vectoriel + drapeau optionnel). */
+  function pageHeader(title, backTo = "hq", { flagCode = null } = {}) {
     const head = el(`
       <div class="page-header">
-        <button class="back-btn">${esc(Codex.t("common.back"))}</button>
+        <button class="back-btn" aria-label="${esc(Codex.t("common.back"))}"></button>
         <div>
           <div class="label">THE CODEX</div>
-          <div class="h2">${esc(title)}</div>
+          <div class="h2 page-title"></div>
         </div>
       </div>`);
-    head.querySelector(".back-btn").addEventListener("click", () => {
+    const backBtn = head.querySelector(".back-btn");
+    backBtn.appendChild(icon("chevron-left", { size: 16 }));
+    backBtn.appendChild(document.createTextNode(Codex.t("common.back").replace(/^←\s*/, "")));
+    const titleEl = head.querySelector(".page-title");
+    if (flagCode) titleEl.appendChild(flag(flagCode));
+    titleEl.appendChild(document.createTextNode(title));
+    backBtn.addEventListener("click", () => {
       Codex.audio.sfx.click();
       Codex.router.go(backTo);
     });
@@ -167,5 +201,11 @@ window.Codex = window.Codex || {};
     return scene;
   }
 
-  Codex.ui = { el, esc, stars, typewrite, pageHeader, echoBar, fragDots, modal, toast, scanEffect, buildScene };
+  /** Couches d'ambiance plein écran (aurora animée, scanlines, grain). */
+  function fxLayers(screenEl, { aurora = true, scanlines = true } = {}) {
+    if (aurora) screenEl.appendChild(el(`<div class="fx-aurora" aria-hidden="true"></div>`));
+    if (scanlines) screenEl.appendChild(el(`<div class="fx-scanlines" aria-hidden="true"></div>`));
+  }
+
+  Codex.ui = { el, esc, stars, icon, flag, typeIcon, typewrite, pageHeader, echoBar, fragDots, modal, toast, scanEffect, buildScene, fxLayers };
 })();

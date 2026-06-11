@@ -150,6 +150,7 @@ window.Codex = window.Codex || {};
     const pct = next ? Math.min(100, Math.round(((xp - level.xp) / (next.xp - level.xp)) * 100)) : 100;
 
     Codex.music.play(arc.theme, "calm");
+    Codex.ui.fxLayers(screenEl);
 
     // ----- Barre agent -----
     const topbar = el(`
@@ -157,7 +158,7 @@ window.Codex = window.Codex || {};
         <div class="hq-avatar" title="${esc(Codex.t("hq.profileTip"))}">🕶️</div>
         <div>
           <div class="data">${esc(st.data.agent.codeName)}</div>
-          <div class="label">${esc(Codex.t(`lvl.${level.key}`))} · ${esc(arc.language.flag)} ${esc(arc.language.name)}</div>
+          <div class="label lang-label">${esc(Codex.t(`lvl.${level.key}`))} · ${esc(arc.language.name)}</div>
         </div>
         <div class="xp-bar-wrap">
           <div class="spread small">
@@ -167,14 +168,18 @@ window.Codex = window.Codex || {};
           <div class="xp-bar"><div class="xp-bar-fill" style="width:${pct}%"></div></div>
         </div>
         <div class="hq-actions">
-          <button class="icon-btn ${st.dailyAvailable() ? "has-signal" : ""}" data-go="daily" title="${esc(Codex.t("hq.dailyTip"))}">📻</button>
-          <button class="icon-btn" data-go="echo-console" title="${esc(Codex.t("hq.echoTip"))}">🛰️</button>
-          <button class="icon-btn" data-go="arena" title="${esc(Codex.t("hq.arenaTip"))}">⚡</button>
-          <button class="icon-btn" data-go="vault" title="${esc(Codex.t("hq.vaultTip"))}">🗄️</button>
-          <button class="icon-btn" data-go="profile" title="${esc(Codex.t("hq.profileTip"))}">🪪</button>
-          <button class="icon-btn" data-go="settings" title="${esc(Codex.t("hq.settingsTip"))}">⚙️</button>
+          <button class="icon-btn ${st.dailyAvailable() ? "has-signal" : ""}" data-go="daily" title="${esc(Codex.t("hq.dailyTip"))}"></button>
+          <button class="icon-btn" data-go="echo-console" title="${esc(Codex.t("hq.echoTip"))}"></button>
+          <button class="icon-btn" data-go="arena" title="${esc(Codex.t("hq.arenaTip"))}"></button>
+          <button class="icon-btn" data-go="vault" title="${esc(Codex.t("hq.vaultTip"))}"></button>
+          <button class="icon-btn" data-go="profile" title="${esc(Codex.t("hq.profileTip"))}"></button>
+          <button class="icon-btn" data-go="settings" title="${esc(Codex.t("hq.settingsTip"))}"></button>
         </div>
       </div>`);
+    const NAV_ICONS = { daily: "radio", "echo-console": "satellite", arena: "zap", vault: "archive", profile: "id-card", settings: "settings" };
+    topbar.querySelectorAll(".icon-btn").forEach((btn) => btn.appendChild(Codex.ui.icon(NAV_ICONS[btn.dataset.go] || "target")));
+    const langLabel = topbar.querySelector(".lang-label");
+    langLabel.insertBefore(Codex.ui.flag(arc.id), langLabel.firstChild);
     topbar.querySelector(".hq-avatar").addEventListener("click", () => {
       Codex.audio.sfx.click();
       Codex.router.go("profile");
@@ -229,7 +234,7 @@ window.Codex = window.Codex || {};
       const card = el(`
         <div class="card card-hover">
           <div class="label amber mb-1">${esc(Codex.t("hq.featured"))}</div>
-          <div class="row"><span style="font-size:26px">${esc(featured.icon)}</span>
+          <div class="row"><span class="featured-ic cyan"></span>
             <div>
               <div style="font-weight:700">${esc(featured.title)}</div>
               <div class="small muted">${esc(featured.location)}</div>
@@ -241,6 +246,7 @@ window.Codex = window.Codex || {};
           </div>
           <div class="small mt-1 mono muted">INTEL : ${esc(featured.brief.intelPreview)}</div>
         </div>`);
+      card.querySelector(".featured-ic").appendChild(Codex.ui.typeIcon(featured.type, { size: 26 }));
       card.addEventListener("click", () => {
         Codex.audio.sfx.paper();
         Codex.router.go("briefing", { mission: featured });

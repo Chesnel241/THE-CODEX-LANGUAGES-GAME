@@ -33,6 +33,13 @@ window.Codex = window.Codex || {};
       ? Codex.t("app.tagline")
       : "La langue est ton arme. · Language is your weapon.";
 
+    Codex.ui.fxLayers(screenEl);
+    screenEl.appendChild(el(`
+      <div class="title-emblem" aria-hidden="true">
+        <div class="ring"></div>
+        <div class="ring r2"></div>
+        <div class="core"></div>
+      </div>`));
     screenEl.appendChild(el(`<div class="tag-classified" style="animation: fadeUp 1s ease 0.3s both; z-index:1">${Codex.ui.esc(confidential)}</div>`));
     screenEl.appendChild(el(`<div class="title-logo mt-2">THE CODEX</div>`));
     screenEl.appendChild(el(`<div class="title-tagline">${Codex.ui.esc(tagline)}</div>`));

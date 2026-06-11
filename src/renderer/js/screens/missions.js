@@ -11,7 +11,7 @@ window.Codex = window.Codex || {};
     const st = Codex.state;
     const arc = Codex.arc();
     Codex.music.play(arc.theme, "calm");
-    screenEl.appendChild(pageHeader(`${arc.language.flag} ${arc.zone.name} — ${arc.zone.domain}`));
+    screenEl.appendChild(pageHeader(`${arc.zone.name} — ${arc.zone.domain}`, "hq", { flagCode: arc.id }));
 
     const scroll = el(`<div class="screen-scroll"></div>`);
     const list = el(`<div class="mission-list"></div>`);
@@ -28,7 +28,7 @@ window.Codex = window.Codex || {};
 
       const card = el(`
         <div class="card card-hover mission-item ${unlocked ? "" : "mission-locked"}">
-          <div class="mission-icon">${esc(m.icon)}</div>
+          <div class="mission-icon"></div>
           <div class="mission-info">
             <div class="row">
               <span style="font-weight:700">${esc(m.title)}</span>
@@ -44,6 +44,7 @@ window.Codex = window.Codex || {};
           <div class="mission-status ${statusClass}">${esc(status)}</div>
         </div>`);
 
+      card.querySelector(".mission-icon").appendChild(Codex.ui.typeIcon(m.type));
       if (unlocked) {
         card.addEventListener("click", () => {
           Codex.audio.sfx.paper();

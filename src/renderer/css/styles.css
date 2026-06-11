@@ -1,7 +1,40 @@
 /* ============================================================
-   THE CODEX — Design System "Spy-Tech-Cinematic" v2 (GDD §12)
-   Phase 2 : lisibilité accrue, surfaces modernes, scènes à couches
+   THE CODEX — Design System "Spy-Tech-Cinematic" v3 « HOLO-OS »
+   Phase 5 : typographie embarquée (GDD §12.3), iconographie
+   vectorielle, panneaux holographiques, couches d'ambiance
    ============================================================ */
+
+/* ---------- Polices embarquées (OFL, vendorées + intégrité SHA-256) ---------- */
+@font-face {
+  font-family: "Inter";
+  src: url("../vendor/fonts/inter-400.woff2") format("woff2");
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Inter";
+  src: url("../vendor/fonts/inter-600.woff2") format("woff2");
+  font-weight: 600; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Inter";
+  src: url("../vendor/fonts/inter-700.woff2") format("woff2");
+  font-weight: 700; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Inter";
+  src: url("../vendor/fonts/inter-800.woff2") format("woff2");
+  font-weight: 800; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Space Mono";
+  src: url("../vendor/fonts/space-mono-400.woff2") format("woff2");
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Space Mono";
+  src: url("../vendor/fonts/space-mono-700.woff2") format("woff2");
+  font-weight: 700; font-style: normal; font-display: swap;
+}
 
 :root {
   --bg-deep: #060A12;
@@ -19,9 +52,9 @@
   --border: #1E3050;
   --border-soft: #16263f;
 
-  --font-display: "Space Mono", "Cascadia Code", "Consolas", "Courier New", monospace;
-  --font-body: "Segoe UI Variable Text", "Segoe UI", "Inter", system-ui, sans-serif;
-  --font-data: "Cascadia Code", "Consolas", "Courier New", monospace;
+  --font-display: "Space Mono", "Cascadia Code", "Consolas", monospace;
+  --font-body: "Inter", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --font-data: "Space Mono", "Cascadia Code", "Consolas", monospace;
 
   --ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1);
   --radius: 12px;
@@ -1255,3 +1288,146 @@ body.reduced-motion *, body.reduced-motion *::before, body.reduced-motion *::aft
 .arena-time { min-width: 44px; text-align: right; font-size: 17px; }
 .arena-zone { flex: 1; display: flex; flex-direction: column; padding-top: 22px; min-height: 0; }
 .arena-q { animation: popIn 220ms var(--ease-pop); }
+
+/* ============================================================
+   PHASE 5 — « HOLO-OS » : iconographie, panneaux, ambiance
+   ============================================================ */
+
+/* ---------- Icônes vectorielles & drapeaux ---------- */
+.ic { display: inline-block; vertical-align: -3px; flex-shrink: 0; }
+.icon-btn .ic { vertical-align: middle; width: 19px; height: 19px; }
+.flag {
+  display: inline-block;
+  vertical-align: -2px;
+  border-radius: 2.5px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12), 0 2px 6px rgba(0, 0, 0, 0.4);
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+.page-title { display: flex; align-items: center; gap: 2px; }
+.label .flag { vertical-align: -3px; margin-right: 6px; }
+.back-btn { display: inline-flex; align-items: center; gap: 4px; }
+.back-btn .ic { width: 15px; height: 15px; }
+
+/* ---------- Boutons premium : balayage de brillance ---------- */
+.btn { position: relative; overflow: hidden; }
+.btn::before {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0;
+  left: -80%;
+  width: 50%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  transform: skewX(-20deg);
+  transition: left 450ms ease;
+  pointer-events: none;
+}
+.btn:hover::before { left: 130%; }
+.btn:disabled::before { display: none; }
+.btn .ic { vertical-align: -3.5px; margin-right: 6px; }
+
+/* ---------- Coins holographiques (équerres lumineuses) ---------- */
+:is(.briefing-doc, .intel-card, .debrief-card, .daily-card, .fragment-popup, .echo-panel, .arena-hud, .nego-target) {
+  position: relative;
+}
+:is(.briefing-doc, .intel-card, .debrief-card, .daily-card, .fragment-popup, .echo-panel, .arena-hud)::before {
+  content: "";
+  position: absolute;
+  top: -1px; left: -1px;
+  width: 16px; height: 16px;
+  border-top: 2px solid var(--accent-cyan);
+  border-left: 2px solid var(--accent-cyan);
+  border-top-left-radius: 10px;
+  opacity: 0.85;
+  pointer-events: none;
+  z-index: 1;
+}
+:is(.briefing-doc, .intel-card, .debrief-card, .daily-card, .fragment-popup, .echo-panel, .arena-hud)::after {
+  content: "";
+  position: absolute;
+  bottom: -1px; right: -1px;
+  width: 16px; height: 16px;
+  border-bottom: 2px solid var(--accent-purple);
+  border-right: 2px solid var(--accent-purple);
+  border-bottom-right-radius: 10px;
+  opacity: 0.85;
+  pointer-events: none;
+  z-index: 1;
+}
+.intel-card::before, .intel-card::after { width: 22px; height: 22px; opacity: 1; }
+
+/* ---------- Couches d'ambiance plein écran ---------- */
+.fx-aurora {
+  position: absolute;
+  inset: -20%;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(38% 30% at 18% 22%, rgba(0, 212, 255, 0.10), transparent 70%),
+    radial-gradient(34% 28% at 82% 14%, rgba(155, 126, 255, 0.10), transparent 70%),
+    radial-gradient(40% 34% at 60% 88%, rgba(0, 212, 255, 0.06), transparent 70%);
+  animation: auroraDrift 26s ease-in-out infinite alternate;
+  filter: blur(2px);
+}
+@keyframes auroraDrift {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(2.5%, -2%) scale(1.06); }
+  100% { transform: translate(-2%, 2.5%) scale(1.02); }
+}
+.fx-scanlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 40;
+  background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.014) 0 1px, transparent 1px 3px);
+  mix-blend-mode: overlay;
+}
+.hq-main, .hq-topbar, .page-header, .screen-scroll, .terrain-topbar, .terrain-scene, .echo-bar,
+.nego-wrap, .surv-wrap, .arena-wrap, .echoc-wrap, .mission-list, .onb-wrap { position: relative; z-index: 1; }
+
+/* ---------- Emblème animé de l'écran titre ---------- */
+.title-emblem { position: relative; width: 130px; height: 130px; margin-bottom: 10px; z-index: 1; }
+.title-emblem .ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px solid rgba(0, 212, 255, 0.4);
+  border-top-color: var(--accent-cyan);
+  border-bottom-color: transparent;
+  animation: emblemSpin 9s linear infinite;
+}
+.title-emblem .ring.r2 {
+  inset: 13px;
+  border-color: rgba(155, 126, 255, 0.35);
+  border-bottom-color: var(--accent-purple);
+  border-top-color: transparent;
+  animation: emblemSpin 6s linear infinite reverse;
+}
+@keyframes emblemSpin { to { transform: rotate(360deg); } }
+.title-emblem .core {
+  position: absolute;
+  inset: 32px;
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+  clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+  animation: breathe 3s ease-in-out infinite;
+  box-shadow: 0 0 40px rgba(0, 212, 255, 0.4);
+}
+
+/* ---------- Raffinements typographiques (vraies polices désormais) ---------- */
+.label { font-size: 11px; letter-spacing: 2.6px; font-weight: 400; }
+.npc-line { letter-spacing: 0.1px; }
+.intel-lemma { letter-spacing: 6px; }
+.choice-btn { border-left: 3px solid transparent; }
+.choice-btn:hover { border-left-color: var(--accent-cyan); }
+.choice-btn.good { border-left-color: var(--accent-green); }
+.choice-btn.bad { border-left-color: var(--accent-red); }
+.mission-icon { color: var(--accent-cyan); background: linear-gradient(160deg, rgba(0,212,255,0.10), rgba(155,126,255,0.06)); }
+.mission-icon .ic { width: 26px; height: 26px; }
+.hq-actions .icon-btn { color: var(--text-muted); transition: all 200ms ease; }
+.hq-actions .icon-btn:hover { color: var(--accent-cyan); }
+
+/* Drapeaux des cartes de langue (onboarding) */
+.lang-card-flag { display: block; height: 40px; margin-bottom: 4px; }
+.lang-card-flag .flag { margin: 0; box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 6px 18px rgba(0,0,0,0.5); }
+.lang-card.locked .lang-card-flag .flag { filter: grayscale(0.7) brightness(0.7); }
+.lang-progress-row .lang-flag .flag { margin: 0; }

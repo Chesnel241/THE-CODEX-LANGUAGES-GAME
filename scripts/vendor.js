@@ -29,6 +29,43 @@ const LIBS = [
   { pkg: "compromise", src: "builds/compromise.js", out: "compromise.js", global: "nlp", license: "MIT" },
 ];
 
+// Polices embarquées (woff2, licence OFL) → vendor/fonts/
+const FONTS = [
+  { pkg: "@fontsource/inter", src: "files/inter-latin-400-normal.woff2", out: "fonts/inter-400.woff2", license: "OFL-1.1" },
+  { pkg: "@fontsource/inter", src: "files/inter-latin-600-normal.woff2", out: "fonts/inter-600.woff2", license: "OFL-1.1" },
+  { pkg: "@fontsource/inter", src: "files/inter-latin-700-normal.woff2", out: "fonts/inter-700.woff2", license: "OFL-1.1" },
+  { pkg: "@fontsource/inter", src: "files/inter-latin-800-normal.woff2", out: "fonts/inter-800.woff2", license: "OFL-1.1" },
+  { pkg: "@fontsource/space-mono", src: "files/space-mono-latin-400-normal.woff2", out: "fonts/space-mono-400.woff2", license: "OFL-1.1" },
+  { pkg: "@fontsource/space-mono", src: "files/space-mono-latin-700-normal.woff2", out: "fonts/space-mono-700.woff2", license: "OFL-1.1" },
+];
+
+// Icônes Lucide (ISC) → embarquées en JS (CSP : aucun fetch au runtime)
+const ICON_NAMES = [
+  "radio", "satellite", "zap", "archive", "id-card", "settings",
+  "lock-open", "drama", "file-search", "handshake", "target",
+  "chevron-left", "volume-2", "send", "check", "sparkles",
+  "shield", "trophy", "timer", "globe", "map-pin", "award",
+  "play", "x", "lightbulb", "message-square",
+];
+
+function buildIconsData() {
+  const out = {};
+  for (const name of ICON_NAMES) {
+    const p = path.join(ROOT, "node_modules", "lucide-static", "icons", `${name}.svg`);
+    if (!fs.existsSync(p)) {
+      console.error(`  ✗ Icône Lucide introuvable : ${name}`);
+      failures += 1;
+      continue;
+    }
+    const svg = fs.readFileSync(p, "utf8");
+    // Extrait le contenu interne du <svg> (paths/shapes), viewBox lucide = 0 0 24 24
+    const inner = svg.replace(/^[\s\S]*?<svg[^>]*>/, "").replace(/<\/svg>\s*$/, "").trim();
+    out[name] = inner;
+  }
+  const banner = "/**\n * THE CODEX — Icônes Lucide embarquées (ISC, https://lucide.dev)\n * Généré par scripts/vendor.js — NE PAS ÉDITER À LA MAIN.\n */\n\"use strict\";\nwindow.Codex = window.Codex || {};\nCodex.ICONS = ";
+  return banner + JSON.stringify(out, null, 1) + ";\n";
+}
+
 function sha256(buf) {
   return crypto.createHash("sha256").update(buf).digest("hex");
 }
@@ -90,6 +127,33 @@ if (verifyOnly) {
     files.push(entry);
     console.log(`  ✓ vendor/${lib.out} ← ${lib.pkg}@${entry.version} (${(buf.length / 1024).toFixed(0)} Ko, ${lib.license})`);
   }
+  // ----- Polices -----
+  fs.mkdirSync(path.join(VENDOR_DIR, "fonts"), { recursive: true });
+  for (const f of FONTS) {
+    const srcPath = path.join(ROOT, "node_modules", f.pkg, f.src);
+    if (!fs.existsSync(srcPath)) {
+      console.error(`  ✗ Police introuvable : ${f.pkg}/${f.src}`);
+      failures += 1;
+      continue;
+    }
+    const buf = fs.readFileSync(srcPath);
+    fs.writeFileSync(path.join(VENDOR_DIR, f.out), buf);
+    files.push({ file: f.out, pkg: f.pkg, version: pkgVersion(f.pkg), license: f.license, sha256: sha256(buf), bytes: buf.length });
+    console.log(`  ✓ vendor/${f.out} ← ${f.pkg} (${(buf.length / 1024).toFixed(0)} Ko, ${f.license})`);
+  }
+
+  // ----- Icônes (générées en JS embarqué) -----
+  const iconsJs = buildIconsData();
+  if (!failures) {
+    const iconsBuf = Buffer.from(iconsJs, "utf8");
+    fs.writeFileSync(path.join(VENDOR_DIR, "icons-data.js"), iconsBuf);
+    files.push({
+      file: "icons-data.js", pkg: "lucide-static", version: pkgVersion("lucide-static"),
+      license: "ISC", global: "Codex.ICONS", sha256: sha256(iconsBuf), bytes: iconsBuf.length,
+    });
+    console.log(`  ✓ vendor/icons-data.js ← lucide-static (${ICON_NAMES.length} icônes, ISC)`);
+  }
+
   if (failures) process.exit(1);
   fs.writeFileSync(MANIFEST, JSON.stringify({ generatedAt: new Date().toISOString(), files }, null, 2));
   console.log(`\nManifeste écrit : src/renderer/vendor/vendor-manifest.json\n`);

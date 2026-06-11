@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-11T02:26:38.655Z",
+  "generatedAt": "2026-06-11T14:12:37.794Z",
   "files": [
     {
       "file": "three.min.js",
@@ -45,6 +45,63 @@
       "global": "nlp",
       "sha256": "15869eab94595e5f8e52466c9a41cd7910ecd08dc1f3570f2f8177426cca3882",
       "bytes": 352811
+    },
+    {
+      "file": "fonts/inter-400.woff2",
+      "pkg": "@fontsource/inter",
+      "version": "5.2.8",
+      "license": "OFL-1.1",
+      "sha256": "8909904ab6c872eb994093482a88a28eca2cd95912d7b6fecd72103b0dc07edc",
+      "bytes": 23664
+    },
+    {
+      "file": "fonts/inter-600.woff2",
+      "pkg": "@fontsource/inter",
+      "version": "5.2.8",
+      "license": "OFL-1.1",
+      "sha256": "f9a06e79cd3a2a20951c0f0e28f66dd0e6d3fda73911d640a2125c8fcb78f21a",
+      "bytes": 24452
+    },
+    {
+      "file": "fonts/inter-700.woff2",
+      "pkg": "@fontsource/inter",
+      "version": "5.2.8",
+      "license": "OFL-1.1",
+      "sha256": "6f56409fd3d64bb85f7d070bce20749db2d66b6d63cec586cc22d1c761be2491",
+      "bytes": 24356
+    },
+    {
+      "file": "fonts/inter-800.woff2",
+      "pkg": "@fontsource/inter",
+      "version": "5.2.8",
+      "license": "OFL-1.1",
+      "sha256": "a7d0a50f15d389cad679238466bdb5fc9787aa0715719064ce25abaff042820d",
+      "bytes": 24400
+    },
+    {
+      "file": "fonts/space-mono-400.woff2",
+      "pkg": "@fontsource/space-mono",
+      "version": "5.2.9",
+      "license": "OFL-1.1",
+      "sha256": "fb4a81a2d0a893e5c38c394a7e716a1cef0b24610a0af49c96f6d529bd66bf2b",
+      "bytes": 16520
+    },
+    {
+      "file": "fonts/space-mono-700.woff2",
+      "pkg": "@fontsource/space-mono",
+      "version": "5.2.9",
+      "license": "OFL-1.1",
+      "sha256": "2d46bd159b53f55c41167a4f1540a074649464194fd1e416f5b4694a6c0f282c",
+      "bytes": 16724
+    },
+    {
+      "file": "icons-data.js",
+      "pkg": "lucide-static",
+      "version": "1.17.0",
+      "license": "ISC",
+      "global": "Codex.ICONS",
+      "sha256": "8ad78d230b4f5f6bd6d5ac3ed37ab317ceb1e373eb39d2c170be121f97e3ffda",
+      "bytes": 5872
     }
   ]
 }

@@ -55,6 +55,11 @@ app.whenReady().then(async () => {
 
       // ---------- Phase 3 : vendors, carte (globe 3D ou repli SVG), Lottie ----------
       const vendorsOk = window.THREE && window.lottie && window.anime && window.Fuse && window.nlp;
+      // ---------- Phase 5 : polices embarquées, icônes vectorielles, drapeaux ----------
+      await document.fonts.ready;
+      out.push(document.fonts.check('16px Inter') && document.fonts.check('16px "Space Mono"') ? 'FONTS:ok' : 'FONTS:FAIL');
+      out.push(Codex.ICONS && Object.keys(Codex.ICONS).length >= 20 && document.querySelector('.hq-actions .icon-btn svg.ic') ? 'ICONS:ok' : 'ICONS:FAIL');
+      out.push(Codex.FLAGS && document.querySelector('.lang-label svg.flag') ? 'FLAGS:ok' : 'FLAGS:FAIL');
       out.push(vendorsOk ? 'VENDORS:ok' : 'VENDORS:FAIL');
       const mapCanvas = document.querySelector('.hq-map-wrap canvas');
       const mapSvg = document.querySelector('.hq-map');

@@ -13,6 +13,23 @@ Application desktop **Electron**, 100 % hors-ligne, zéro dépendance runtime.
 **🎮 Pour jouer : voir [GUIDE-INSTALLATION.md](GUIDE-INSTALLATION.md)** —
 téléchargez le `.exe` depuis la page Releases, double-cliquez, jouez.
 
+## Nouveautés Phase 5 — UI « HOLO-OS »
+
+- 🔤 **Typographie embarquée** : Space Mono + Inter (OFL) vendorées en woff2
+  avec intégrité SHA-256 — les polices du GDD §12.3 enfin réelles, identiques
+  sur toutes les machines.
+- 🧭 **Iconographie vectorielle** : 26 icônes Lucide (ISC) extraites en JS
+  embarqué (zéro fetch, CSP intacte) — navigation, types de mission, actions.
+- 🏳️ **Drapeaux SVG faits main** : Windows n'affiche pas les emojis drapeaux
+  (🇬🇧 → « GB ») ; 10 mini-drapeaux vectoriels garantissent un rendu identique
+  partout (onboarding, QG, en-têtes, profil).
+- 🖼️ **Panneaux holographiques** : équerres lumineuses cyan/violet sur les
+  documents classifiés, cartes intel, popups, HUD d'Arène.
+- 🌌 **Couches d'ambiance** : aurora dérivante animée + scanlines CRT subtiles
+  sur le titre et le QG ; emblème animé (anneaux orbitaux + cœur hexagonal).
+- ✨ **Micro-finitions** : balayage de brillance sur les boutons, accent
+  latéral sur les choix de dialogue, barre d'actions du QG en icônes.
+
 ## Nouveautés Phase 4
 
 - ⚡ **Arène — Blitz d'Infiltration** (GDD §6.3) : défi chronométré en continu.

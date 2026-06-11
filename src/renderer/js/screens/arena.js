@@ -20,7 +20,7 @@ window.Codex = window.Codex || {};
     const arc = Codex.arc();
     const best = st.data.arena.best[arc.id] || 0;
 
-    screenEl.appendChild(pageHeader(`${Codex.t("arena.title")} — ${arc.language.flag} ${arc.language.name}`));
+    screenEl.appendChild(pageHeader(`${Codex.t("arena.title")} — ${arc.language.name}`, "hq", { flagCode: arc.id }));
 
     let time = START_TIME;
     let score = 0;

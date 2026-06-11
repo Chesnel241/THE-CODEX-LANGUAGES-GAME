@@ -11,13 +11,13 @@ window.Codex = window.Codex || {};
   const { el, esc } = Codex.ui;
 
   const L1_CHOICES = [
-    { id: "fr", flag: "🇫🇷", name: "Français", sub: "Je parle français" },
-    { id: "en", flag: "🇬🇧", name: "English", sub: "I speak English" },
+    { id: "fr", flagCode: "fr", name: "Français", sub: "Je parle français" },
+    { id: "en", flagCode: "gb", name: "English", sub: "I speak English" },
   ];
 
   // Théâtres verrouillés affichés en teaser (GDD §3.2)
   const TEASERS = [
-    { flag: "🇯🇵", name: "日本語" }, { flag: "🇨🇳", name: "中文" }, { flag: "🇸🇦", name: "العربية" },
+    { flagCode: "jp", name: "日本語" }, { flagCode: "cn", name: "中文" }, { flagCode: "sa", name: "العربية" },
   ];
 
   Codex.router.register("onboarding", (screenEl) => {
@@ -40,10 +40,11 @@ window.Codex = window.Codex || {};
       L1_CHOICES.forEach((c) => {
         const card = el(`
           <div class="lang-card" role="button" tabindex="0">
-            <span class="flag">${esc(c.flag)}</span>
+            <span class="lang-card-flag"></span>
             <div class="name">${esc(c.name)}</div>
             <div class="sub">${esc(c.sub)}</div>
           </div>`);
+        card.querySelector(".lang-card-flag").appendChild(Codex.ui.flag(c.flagCode, { w: 52 }));
         const pick = () => {
           Codex.audio.sfx.stamp();
           l1 = c.id;
@@ -73,10 +74,11 @@ window.Codex = window.Codex || {};
         .forEach((arc) => {
           const card = el(`
             <div class="lang-card" role="button" tabindex="0">
-              <span class="flag">${esc(arc.language.flag)}</span>
+              <span class="lang-card-flag"></span>
               <div class="name">${esc(arc.language.name)}</div>
               <div class="sub">${esc(arc.zone.name)} — ${esc(arc.missions.length)} missions</div>
             </div>`);
+          card.querySelector(".lang-card-flag").appendChild(Codex.ui.flag(arc.id, { w: 52 }));
           const pick = () => {
             Codex.audio.sfx.stamp();
             l2 = arc.id;
@@ -88,12 +90,14 @@ window.Codex = window.Codex || {};
         });
 
       TEASERS.forEach((tz) => {
-        cards.appendChild(el(`
+        const card = el(`
           <div class="lang-card locked">
-            <span class="flag">${esc(tz.flag)}</span>
+            <span class="lang-card-flag"></span>
             <div class="name">${esc(tz.name)}</div>
             <div class="sub">🔒 ${esc(Codex.t("onb.phase3"))}</div>
-          </div>`));
+          </div>`);
+        card.querySelector(".lang-card-flag").appendChild(Codex.ui.flag(tz.flagCode, { w: 52 }));
+        cards.appendChild(card);
       });
 
       wrap.appendChild(step);

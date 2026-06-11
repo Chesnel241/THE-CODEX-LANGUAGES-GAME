@@ -19,7 +19,7 @@ window.Codex = window.Codex || {};
   Codex.router.register("vault", (screenEl) => {
     const st = Codex.state;
     const arc = Codex.arc();
-    screenEl.appendChild(pageHeader(`${Codex.t("vault.title")} — ${arc.language.flag} ${arc.language.name}`));
+    screenEl.appendChild(pageHeader(`${Codex.t("vault.title")} — ${arc.language.name}`, "hq", { flagCode: arc.id }));
     Codex.audio.sfx.pageTurn();
 
     const scroll = el(`<div class="screen-scroll"></div>`);

@@ -1,7 +1,7 @@
 {
   "name": "the-codex",
   "productName": "THE CODEX",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "THE CODEX — Jeu d'espionnage linguistique. La langue est ton arme.",
   "main": "src/main/main.js",
   "private": true,
@@ -12,14 +12,20 @@
   "scripts": {
     "start": "electron .",
     "dev": "electron . --dev",
-    "test": "node scripts/validate-content.js",
+    "test": "node scripts/validate-content.js && node scripts/vendor.js --verify && node scripts/test-echo.js",
     "smoke": "electron scripts/smoke-test.js",
     "icon": "node scripts/generate-icon.js",
     "pack": "electron-builder --dir",
-    "dist": "electron-builder --win"
+    "dist": "electron-builder --win",
+    "vendor": "node scripts/vendor.js"
   },
   "devDependencies": {
+    "animejs": "^3.2.2",
+    "compromise": "^14.15.1",
     "electron": "^34.0.0",
-    "electron-builder": "^25.1.8"
+    "electron-builder": "^25.1.8",
+    "fuse.js": "^6.6.2",
+    "lottie-web": "^5.13.0",
+    "three": "^0.149.0"
   }
 }

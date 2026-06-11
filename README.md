@@ -13,6 +13,27 @@ Application desktop **Electron**, 100 % hors-ligne, zéro dépendance runtime.
 **🎮 Pour jouer : voir [GUIDE-INSTALLATION.md](GUIDE-INSTALLATION.md)** —
 téléchargez le `.exe` depuis la page Releases, double-cliquez, jouez.
 
+## Nouveautés Phase 3
+
+- 🛰️ **Console ECHO — chatbot intelligent 100 % hors-ligne** : ECHO maîtrise
+  toute la base de connaissances du jeu (verbes, grammaire, phrasebook,
+  culture, cartes intel, règles du jeu) via un moteur d'intentions +
+  recherche floue par jeton (Fuse.js) + conjugaison NLP à la volée
+  (compromise). Conversations bilingues FR/EN, blocs de conjugaison,
+  pistes connexes, suggestions, prononciation TTS. 38 tests unitaires.
+- 🌍 **Globe 3D au QG** (three.js) : graticule, étoiles, marqueurs de pays
+  pulsants et cliquables, rotation auto + glisser-déposer — avec repli
+  automatique sur la carte SVG si WebGL est indisponible.
+- 📚 **Base de connaissances enrichie** : 60 verbes irréguliers anglais,
+  32 conjugaisons françaises complètes (présent ×6, passé composé avec
+  auxiliaire, futur, imparfait), 24 fiches de grammaire, 36 expressions de
+  phrasebook, 16 dossiers culturels.
+- ✨ **Animations** : lecteur Lottie (radar de transmission, coche de
+  réussite — créations originales embarquées, zéro fetch) + micro-animations
+  anime.js (cascades, barres XP élastiques).
+- 🔐 **Chaîne d'approvisionnement durcie** : 5 librairies vendorées et
+  épinglées, manifeste d'intégrité SHA-256 vérifié en CI (voir SECURITY.md).
+
 ## Nouveautés Phase 2
 
 - 🎵 **Musique adaptative générative** (GDD §11.2) — bande-son procédurale

@@ -16,8 +16,68 @@ window.Codex = window.Codex || {};
     return n;
   }
 
-  function buildMap(wrap) {
+  /** Statut d'un pays pour l'agent courant (partagé globe 3D / carte SVG). */
+  function countryStatus(c) {
     const st = Codex.state;
+    const arc = c.arcId ? Codex.ARCS[c.arcId] : null;
+    const playable = Boolean(arc && arc.l1 === st.l1());
+    const isNative = Boolean(arc && arc.l1 !== st.l1());
+    const isActive = playable && c.arcId === st.lang();
+    const status = isActive ? "active" : playable ? "playable" : isNative ? "native" : "locked";
+    const color = isActive ? "#00D4FF" : playable ? "#2ED573" : isNative ? "#9B7EFF" : "#22324d";
+    const haloCss = isActive ? "rgba(0,212,255,0.8)" : playable ? "rgba(46,213,115,0.8)" : isNative ? "rgba(155,126,255,0.6)" : "rgba(40,60,90,0.5)";
+    return { playable, isNative, isActive, status, color, haloCss };
+  }
+
+  function tooltipHtml(c, s) {
+    if (s.playable) {
+      return `<span class="cyan">${esc(c.name)}</span> — ${esc(c.lang)}<br><span class="muted small">${esc(Codex.t("hq.activeHint"))}</span>`;
+    }
+    if (s.isNative) {
+      return `<span class="purple">${esc(c.name)}</span><br><span class="muted small">${esc(Codex.t("hq.nativeLang"))} — ${esc(Codex.t("hq.nativeLangSub"))}</span>`;
+    }
+    return `<span class="muted">${esc(c.name)} — ${esc(c.lang)}</span><br><span class="amber small">${esc(Codex.t("hq.lockedCountry"))}</span>`;
+  }
+
+  function selectCountry(c) {
+    const st = Codex.state;
+    Codex.audio.sfx.click();
+    if (c.arcId !== st.lang()) {
+      st.setL2(c.arcId);
+      Codex.ui.toast(Codex.t("toast.langSwitch", { lang: Codex.ARCS[c.arcId].language.name }), c.flag);
+      Codex.router.go("hq");
+    } else {
+      Codex.router.go("missions");
+    }
+  }
+
+  /** Globe 3D (three.js) — retourne true si monté, false → repli SVG. */
+  function buildGlobe(wrap) {
+    if (!Codex.globe) return false;
+    const tooltip = el(`<div class="map-tooltip" style="display:none"></div>`);
+    const countries = Codex.CONTENT.countries.map((c) => {
+      const s = countryStatus(c);
+      return { ...c, ...s };
+    });
+    const ctrl = Codex.globe.mount(wrap, {
+      countries,
+      onSelect: (c) => { if (c.playable) selectCountry(c); else Codex.audio.sfx.error(); },
+      onHover: (c, x, y) => {
+        if (!c) { tooltip.style.display = "none"; return; }
+        Codex.audio.sfx.hover();
+        tooltip.style.display = "block";
+        tooltip.innerHTML = tooltipHtml(c, c);
+        const rect = wrap.getBoundingClientRect();
+        tooltip.style.left = `${x - rect.left}px`;
+        tooltip.style.top = `${y - rect.top}px`;
+      },
+    });
+    if (!ctrl) return false;
+    wrap.appendChild(tooltip);
+    return true;
+  }
+
+  function buildMap(wrap) {
     const svg = svgEl("svg", { viewBox: "0 0 1000 520", class: "hq-map" });
 
     // Grille radar
@@ -45,36 +105,25 @@ window.Codex = window.Codex || {};
     wrap.appendChild(tooltip);
 
     Codex.CONTENT.countries.forEach((c) => {
-      const arc = c.arcId ? Codex.ARCS[c.arcId] : null;
-      const playable = Boolean(arc && arc.l1 === st.l1()); // narration dans la langue du joueur
-      const isNative = Boolean(arc && arc.l1 !== st.l1()); // l'autre langue = sa langue natale
-      const isActive = playable && c.arcId === st.lang();
+      const s = countryStatus(c);
+      const g = svgEl("g", { class: s.playable ? "map-node" : "map-node map-node-locked" });
 
-      const g = svgEl("g", { class: playable ? "map-node" : "map-node map-node-locked" });
-      const color = isActive ? "#00D4FF" : playable ? "#2ED573" : isNative ? "#9B7EFF" : "#22324d";
-
-      if (playable) {
-        g.appendChild(svgEl("circle", { cx: c.x, cy: c.y, r: 14, fill: color, opacity: "0.3", class: "map-pulse" }));
+      if (s.playable) {
+        g.appendChild(svgEl("circle", { cx: c.x, cy: c.y, r: 14, fill: s.color, opacity: "0.3", class: "map-pulse" }));
       }
-      g.appendChild(svgEl("circle", { cx: c.x, cy: c.y, r: 7, fill: playable || isNative ? color : "transparent", stroke: color, "stroke-width": 2, opacity: isNative ? 0.55 : 1 }));
+      g.appendChild(svgEl("circle", { cx: c.x, cy: c.y, r: 7, fill: s.playable || s.isNative ? s.color : "transparent", stroke: s.color, "stroke-width": 2, opacity: s.isNative ? 0.55 : 1 }));
 
       const label = svgEl("text", {
-        x: c.x, y: c.y + 26, "text-anchor": "middle", fill: playable ? "#E2EDF7" : isNative ? "#7a6fb8" : "#33415c",
+        x: c.x, y: c.y + 26, "text-anchor": "middle", fill: s.playable ? "#E2EDF7" : s.isNative ? "#7a6fb8" : "#33415c",
         "font-size": "12", "font-family": "Consolas, monospace",
       });
-      label.textContent = playable || isNative ? `${c.flag} ${c.name.split(" · ")[0]}` : "🔒";
+      label.textContent = s.playable || s.isNative ? `${c.flag} ${c.name.split(" · ")[0]}` : "🔒";
       g.appendChild(label);
 
       g.addEventListener("mouseenter", () => {
         Codex.audio.sfx.hover();
         tooltip.style.display = "block";
-        if (playable) {
-          tooltip.innerHTML = `<span class="cyan">${esc(c.name)}</span> — ${esc(c.lang)}<br><span class="muted small">${esc(Codex.t("hq.activeHint"))}</span>`;
-        } else if (isNative) {
-          tooltip.innerHTML = `<span class="purple">${esc(c.name)}</span><br><span class="muted small">${esc(Codex.t("hq.nativeLang"))} — ${esc(Codex.t("hq.nativeLangSub"))}</span>`;
-        } else {
-          tooltip.innerHTML = `<span class="muted">${esc(c.name)} — ${esc(c.lang)}</span><br><span class="amber small">${esc(Codex.t("hq.lockedCountry"))}</span>`;
-        }
+        tooltip.innerHTML = tooltipHtml(c, s);
         const rect = wrap.getBoundingClientRect();
         const pt = svg.createSVGPoint();
         pt.x = c.x; pt.y = c.y;
@@ -84,17 +133,8 @@ window.Codex = window.Codex || {};
       });
       g.addEventListener("mouseleave", () => { tooltip.style.display = "none"; });
 
-      if (playable) {
-        g.addEventListener("click", () => {
-          Codex.audio.sfx.click();
-          if (c.arcId !== st.lang()) {
-            st.setL2(c.arcId);
-            Codex.ui.toast(Codex.t("toast.langSwitch", { lang: Codex.ARCS[c.arcId].language.name }), c.flag);
-            Codex.router.go("hq");
-          } else {
-            Codex.router.go("missions");
-          }
-        });
+      if (s.playable) {
+        g.addEventListener("click", () => selectCountry(c));
       }
       svg.appendChild(g);
     });
@@ -129,6 +169,7 @@ window.Codex = window.Codex || {};
         </div>
         <div class="hq-actions">
           <button class="icon-btn ${st.dailyAvailable() ? "has-signal" : ""}" data-go="daily" title="${esc(Codex.t("hq.dailyTip"))}">📻</button>
+          <button class="icon-btn" data-go="echo-console" title="${esc(Codex.t("hq.echoTip"))}">🛰️</button>
           <button class="icon-btn" data-go="vault" title="${esc(Codex.t("hq.vaultTip"))}">🗄️</button>
           <button class="icon-btn" data-go="profile" title="${esc(Codex.t("hq.profileTip"))}">🪪</button>
           <button class="icon-btn" data-go="settings" title="${esc(Codex.t("hq.settingsTip"))}">⚙️</button>
@@ -146,15 +187,18 @@ window.Codex = window.Codex || {};
     });
     screenEl.appendChild(topbar);
 
-    // ----- Corps : carte + panneau latéral -----
+    // ----- Corps : globe 3D (repli carte SVG) + panneau latéral -----
+    // Le conteneur est attaché au DOM avant le montage du globe (taille +
+    // cycle de vie corrects pour le canvas WebGL).
     const main = el(`<div class="hq-main"></div>`);
     const mapWrap = el(`<div class="hq-map-wrap"></div>`);
-    mapWrap.appendChild(buildMap(mapWrap));
     main.appendChild(mapWrap);
+    screenEl.appendChild(main);
+    if (!buildGlobe(mapWrap)) mapWrap.appendChild(buildMap(mapWrap));
 
     const side = el(`<div class="hq-side"></div>`);
 
-    // Panneau ECHO
+    // Panneau ECHO (avec radar Lottie animé)
     const echoLines = arc.echo.hq;
     const echoMsg = echoLines[Math.floor(Math.random() * echoLines.length)];
     const dailyOk = st.dailyAvailable();
@@ -162,13 +206,15 @@ window.Codex = window.Codex || {};
       <div class="echo-panel">
         <div class="echo-head">
           <div class="echo-hex"></div>
-          <span class="label purple">${esc(Codex.t("hq.transmission"))}</span>
+          <span class="label purple" style="flex:1">${esc(Codex.t("hq.transmission"))}</span>
+          <div class="lottie-radar" aria-hidden="true"></div>
         </div>
         <div class="echo-text"></div>
         ${dailyOk
           ? `<button class="btn btn-ghost mt-2" style="width:100%">${esc(Codex.t("hq.daily"))}</button>`
           : `<div class="small muted mt-2">${esc(Codex.t("hq.dailyDone", { n: st.data.daily.count }))}</div>`}
       </div>`);
+    Codex.fx.lottie(echoPanel.querySelector(".lottie-radar"), "radar", { loop: true });
     Codex.ui.typewrite(echoPanel.querySelector(".echo-text"), echoMsg);
     const dailyBtn = echoPanel.querySelector(".btn");
     if (dailyBtn) dailyBtn.addEventListener("click", () => {
@@ -222,5 +268,6 @@ window.Codex = window.Codex || {};
 
     main.appendChild(side);
     screenEl.appendChild(main);
+    Codex.fx.stagger([...side.children]);
   });
 })();

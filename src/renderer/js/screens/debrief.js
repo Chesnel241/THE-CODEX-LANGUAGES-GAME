@@ -28,7 +28,7 @@ window.Codex = window.Codex || {};
       <div class="debrief-card">
         ${r.levelUp ? `<div class="levelup-banner">${esc(Codex.t("debrief.promotion", { lvl: Codex.t(`lvl.${r.levelUp.key}`) }))}</div>` : ""}
         <div class="debrief-head">
-          <div class="debrief-check">${ending ? "🎯" : "✅"}</div>
+          <div class="debrief-check">${ending ? "🎯" : ""}</div>
           <div class="h2 mt-1">${esc(ending ? ending.title : mission.title.toUpperCase())}</div>
           <div class="small muted">${ending ? "" : esc(Codex.t("debrief.done")) + " · "}${esc(Codex.t("debrief.score"))} : <span class="data cyan">${r.score}%</span></div>
         </div>
@@ -76,6 +76,12 @@ window.Codex = window.Codex || {};
       }, 600 + i * 500);
     });
 
+    // Coche animée (Lottie) — repli emoji si indisponible
+    if (!ending) {
+      const checkSlot = card.querySelector(".debrief-check");
+      if (!Codex.fx.lottie(checkSlot, "check", { loop: false })) checkSlot.textContent = "✅";
+    }
+
     // Animation barre XP + sons
     setTimeout(() => {
       Codex.audio.sfx.xp();
@@ -83,7 +89,7 @@ window.Codex = window.Codex || {};
       const next = st.nextLevel();
       const xp = st.prog().xp;
       const pct = next ? Math.min(100, Math.round(((xp - level.xp) / (next.xp - level.xp)) * 100)) : 100;
-      card.querySelector(".xp-bar-fill").style.width = `${pct}%`;
+      Codex.fx.fillBar(card.querySelector(".xp-bar-fill"), pct, 0);
     }, 400);
     if (r.levelUp) setTimeout(() => Codex.audio.sfx.levelUp(), 900);
 

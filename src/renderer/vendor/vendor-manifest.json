@@ -1,0 +1,50 @@
+{
+  "generatedAt": "2026-06-11T02:26:38.655Z",
+  "files": [
+    {
+      "file": "three.min.js",
+      "pkg": "three",
+      "version": "0.149.0",
+      "license": "MIT",
+      "global": "THREE",
+      "sha256": "8a5f7249903b54d30f79f708699d2fed2d6a1d0741a4cd41377d1f01bb5a2271",
+      "bytes": 608081
+    },
+    {
+      "file": "lottie.min.js",
+      "pkg": "lottie-web",
+      "version": "5.13.0",
+      "license": "MIT",
+      "global": "lottie",
+      "sha256": "2eb762973aec914d981f426123040bfac9d26217239605e225ddc7cee17618ac",
+      "bytes": 305704
+    },
+    {
+      "file": "anime.min.js",
+      "pkg": "animejs",
+      "version": "3.2.2",
+      "license": "MIT",
+      "global": "anime",
+      "sha256": "b5ce1be3c3f530f192e0f2571d1942846096d66119cbada34bfdc912c4873f35",
+      "bytes": 17384
+    },
+    {
+      "file": "fuse.min.js",
+      "pkg": "fuse.js",
+      "version": "6.6.2",
+      "license": "Apache-2.0",
+      "global": "Fuse",
+      "sha256": "c57339c3fa16b1d69d9a6b46749a8139ef8d4fc9bbfe48144ff897aa7d4222ec",
+      "bytes": 23539
+    },
+    {
+      "file": "compromise.js",
+      "pkg": "compromise",
+      "version": "14.15.1",
+      "license": "MIT",
+      "global": "nlp",
+      "sha256": "15869eab94595e5f8e52466c9a41cd7910ecd08dc1f3570f2f8177426cca3882",
+      "bytes": 352811
+    }
+  ]
+}

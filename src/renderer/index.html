@@ -11,18 +11,33 @@
 <body>
   <div id="app" aria-live="polite"></div>
 
+  <!-- Librairies vendorées (épinglées, intégrité vérifiée — voir vendor-manifest.json) -->
+  <script src="vendor/three.min.js"></script>
+  <script src="vendor/lottie.min.js"></script>
+  <script src="vendor/anime.min.js"></script>
+  <script src="vendor/fuse.min.js"></script>
+  <script src="vendor/compromise.js"></script>
+
   <!-- Cœur -->
   <script src="js/core/audio.js"></script>
   <script src="js/core/music.js"></script>
   <script src="js/core/state.js"></script>
   <script src="js/core/router.js"></script>
   <script src="js/core/ui.js"></script>
+  <script src="js/core/fx.js"></script>
+  <script src="js/core/globe.js"></script>
 
-  <!-- Contenu -->
+  <!-- Ressources embarquées -->
+  <script src="assets/lottie/lottie-data.js"></script>
+
+  <!-- Contenu & base de connaissances -->
   <script src="js/data/i18n.js"></script>
   <script src="js/data/content-core.js"></script>
   <script src="js/data/content-en.js"></script>
   <script src="js/data/content-fr.js"></script>
+  <script src="js/data/kb-en.js"></script>
+  <script src="js/data/kb-fr.js"></script>
+  <script src="js/core/echo-ai.js"></script>
 
   <!-- Moteurs de mission -->
   <script src="js/engines/percee.js"></script>
@@ -43,6 +58,7 @@
   <script src="js/screens/profile.js"></script>
   <script src="js/screens/settings.js"></script>
   <script src="js/screens/daily.js"></script>
+  <script src="js/screens/echo-console.js"></script>
 
   <!-- Bootstrap -->
   <script src="js/app.js"></script>

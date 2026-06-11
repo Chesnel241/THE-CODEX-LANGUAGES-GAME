@@ -224,6 +224,14 @@ window.Codex = window.Codex || {};
 
       "common.back": "← RETOUR",
       "toast.langSwitch": "Théâtre d'opérations : {lang}",
+
+      // Console ECHO
+      "echoc.title": "🛰️ Console ECHO",
+      "echoc.ph": "Posez votre question à ECHO…",
+      "echoc.send": "ENVOYER",
+      "echoc.intro": "Canal sécurisé établi, {name}. Je maîtrise chaque verbe, chaque règle et chaque dossier de l'Institut. Interrogez-moi.",
+      "echoc.related": "Pistes connexes :",
+      "hq.echoTip": "Console ECHO",
     },
 
     en: {
@@ -428,6 +436,14 @@ window.Codex = window.Codex || {};
 
       "common.back": "← BACK",
       "toast.langSwitch": "Theatre of operations: {lang}",
+
+      // ECHO console
+      "echoc.title": "🛰️ ECHO Console",
+      "echoc.ph": "Ask ECHO anything…",
+      "echoc.send": "SEND",
+      "echoc.intro": "Secure channel established, {name}. I master every verb, every rule and every dossier in the Institute. Ask away.",
+      "echoc.related": "Related leads:",
+      "hq.echoTip": "ECHO Console",
     },
   };
 

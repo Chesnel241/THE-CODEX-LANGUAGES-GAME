@@ -98,6 +98,7 @@ window.Codex = window.Codex || {};
         grid.appendChild(card);
       });
       scroll.appendChild(grid);
+      Codex.fx.stagger([...grid.children], { step: 35 });
     }
 
     screenEl.appendChild(scroll);

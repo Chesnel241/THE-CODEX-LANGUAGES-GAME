@@ -29,16 +29,16 @@ Codex.CONTENT = {
   // GDD §3.2 — positions sur la carte stylisée (viewBox 1000×520).
   // arcId : arc jouable correspondant (null = Phase 3).
   countries: [
-    { id: "uk", flag: "🇬🇧", name: "Royaume-Uni · United Kingdom", lang: "Anglais (UK) · English", x: 468, y: 138, arcId: "en-UK" },
-    { id: "fr", flag: "🇫🇷", name: "France", lang: "Français · French", x: 487, y: 172, arcId: "fr-FR" },
-    { id: "us", flag: "🇺🇸", name: "États-Unis · United States", lang: "Anglais (US) · English (US)", x: 220, y: 195, arcId: null },
-    { id: "es", flag: "🇪🇸", name: "Espagne · Spain", lang: "Espagnol · Spanish", x: 462, y: 205, arcId: null },
-    { id: "br", flag: "🇧🇷", name: "Brésil · Brazil", lang: "Portugais (BR) · Portuguese", x: 320, y: 350, arcId: null },
-    { id: "de", flag: "🇩🇪", name: "Allemagne · Germany", lang: "Allemand · German", x: 520, y: 150, arcId: null },
-    { id: "jp", flag: "🇯🇵", name: "Japon · Japan", lang: "Japonais · Japanese", x: 858, y: 200, arcId: null },
-    { id: "cn", flag: "🇨🇳", name: "Chine · China", lang: "Mandarin", x: 770, y: 215, arcId: null },
-    { id: "sa", flag: "🇸🇦", name: "Arabie Saoudite · Saudi Arabia", lang: "Arabe (MSA) · Arabic", x: 600, y: 250, arcId: null },
-    { id: "kr", flag: "🇰🇷", name: "Corée du Sud · South Korea", lang: "Coréen · Korean", x: 828, y: 195, arcId: null },
+    { id: "uk", lat: 54, lon: -2, flag: "🇬🇧", name: "Royaume-Uni · United Kingdom", lang: "Anglais (UK) · English", x: 468, y: 138, arcId: "en-UK" },
+    { id: "fr", lat: 46.5, lon: 2.5, flag: "🇫🇷", name: "France", lang: "Français · French", x: 487, y: 172, arcId: "fr-FR" },
+    { id: "us", lat: 39, lon: -98, flag: "🇺🇸", name: "États-Unis · United States", lang: "Anglais (US) · English (US)", x: 220, y: 195, arcId: null },
+    { id: "es", lat: 40, lon: -3.5, flag: "🇪🇸", name: "Espagne · Spain", lang: "Espagnol · Spanish", x: 462, y: 205, arcId: null },
+    { id: "br", lat: -10, lon: -52, flag: "🇧🇷", name: "Brésil · Brazil", lang: "Portugais (BR) · Portuguese", x: 320, y: 350, arcId: null },
+    { id: "de", lat: 51, lon: 10, flag: "🇩🇪", name: "Allemagne · Germany", lang: "Allemand · German", x: 520, y: 150, arcId: null },
+    { id: "jp", lat: 36, lon: 138, flag: "🇯🇵", name: "Japon · Japan", lang: "Japonais · Japanese", x: 858, y: 200, arcId: null },
+    { id: "cn", lat: 35, lon: 103, flag: "🇨🇳", name: "Chine · China", lang: "Mandarin", x: 770, y: 215, arcId: null },
+    { id: "sa", lat: 24, lon: 45, flag: "🇸🇦", name: "Arabie Saoudite · Saudi Arabia", lang: "Arabe (MSA) · Arabic", x: 600, y: 250, arcId: null },
+    { id: "kr", lat: 36.5, lon: 128, flag: "🇰🇷", name: "Corée du Sud · South Korea", lang: "Coréen · Korean", x: 828, y: 195, arcId: null },
   ],
 };
 

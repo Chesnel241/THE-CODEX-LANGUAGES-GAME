@@ -84,7 +84,7 @@ window.Codex = window.Codex || {};
 
     const card = el(`
       <div class="daily-card">
-        <div class="daily-img">📻</div>
+        <div class="daily-img"></div>
         <div class="fragment-section">
           <div class="spread">
             <span class="label purple">${esc(isChallenge ? Codex.t("daily.challenge") : Codex.t("daily.signal"))}</span>
@@ -163,6 +163,10 @@ window.Codex = window.Codex || {};
         Codex.router.go("hq");
       });
     }
+
+    // Radar animé (Lottie) — repli emoji si indisponible
+    const img = card.querySelector(".daily-img");
+    if (!Codex.fx.lottie(img, "radar", { loop: true })) img.textContent = "📻";
 
     Codex.audio.sfx.daily();
     showQuestion();

@@ -10,8 +10,31 @@ appliquées et le modèle de menace retenu.
 |---|---|---|
 | Machine de l'utilisateur | Exécution de code via le renderer | Sandbox Chromium + isolation de contexte + CSP stricte |
 | Sauvegarde locale | Corruption / payload malveillant | Validation de schéma côté main + borne de taille 1 Mo + écriture atomique |
-| Chaîne d'approvisionnement | Dépendance compromise | **Zéro dépendance runtime** ; 2 devDependencies (electron, electron-builder) verrouillées par lockfile |
+| Chaîne d'approvisionnement | Dépendance compromise | Librairies **vendorées et épinglées** avec manifeste SHA-256 vérifié en CI (voir ci-dessous) ; devDependencies verrouillées par lockfile |
 | Distribution | Binaire altéré | Build reproductible en CI GitHub Actions ; signature de code possible (voir ci-dessous) |
+| Entrée libre (chatbot ECHO) | Injection via la saisie | Traitement texte pur (aucune éval), borne 300 caractères, affichage par `textContent` uniquement |
+
+## Librairies vendorées (politique de chaîne d'approvisionnement)
+
+Le renderer embarque 5 librairies open source, **copiées localement** dans
+`src/renderer/vendor/` (la CSP `script-src 'self'` interdit tout CDN) :
+
+| Librairie | Version épinglée | Licence | Usage |
+|---|---|---|---|
+| three | 0.149.0 | MIT | Globe 3D du QG |
+| lottie-web | 5.x | MIT | Animations vectorielles (créations originales embarquées) |
+| animejs | 3.2.2 | MIT | Micro-animations UI |
+| fuse.js | 6.6.2 | Apache-2.0 | Recherche floue du chatbot ECHO |
+| compromise | 14.x | MIT | Conjugaison anglaise NLP hors base |
+
+Contrôles :
+- `src/renderer/vendor/vendor-manifest.json` fige **l'empreinte SHA-256** de
+  chaque fichier ; `node scripts/vendor.js --verify` échoue la CI à la moindre
+  altération (exécuté par `npm test`)
+- Mise à jour uniquement via `npm run vendor` (re-copie depuis des versions
+  épinglées + régénération du manifeste, diff auditables en revue)
+- Aucune de ces librairies n'accède au réseau ; `connect-src 'none'` le
+  garantit au niveau plateforme
 
 ## Durcissement Electron
 

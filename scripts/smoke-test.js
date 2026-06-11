@@ -27,7 +27,10 @@ app.whenReady().then(async () => {
     },
   });
   win.webContents.on("console-message", (_e, level, message) => {
-    if (level >= 2 && !message.includes("Autofill")) errors.push(message);
+    // Bruit d'infrastructure (WebGL logiciel en CI/conteneur sans GPU) — pas
+    // des erreurs applicatives. Les vraies erreurs JS/CSP restent capturées.
+    const infraNoise = /Autofill|GroupMarkerNotSet|[Ss]wift[Ss]hader|GL Driver Message|Automatic fallback to software WebGL/;
+    if (level >= 2 && !infraNoise.test(message)) errors.push(message);
   });
   await win.loadFile(path.join(__dirname, "..", "src", "renderer", "index.html"));
   await new Promise((r) => setTimeout(r, 2200));
@@ -49,6 +52,27 @@ app.whenReady().then(async () => {
       out.push(document.querySelector('.hq-topbar') ? 'HQ-FR:ok' : 'HQ-FR:FAIL');
       out.push(Codex.state.l1() === 'fr' && Codex.state.lang() === 'en-UK' ? 'LANGS:ok' : 'LANGS:FAIL');
       out.push(Codex.music.state() ? 'MUSIC:ok(' + Codex.music.state() + ')' : 'MUSIC:FAIL');
+
+      // ---------- Phase 3 : vendors, carte (globe 3D ou repli SVG), Lottie ----------
+      const vendorsOk = window.THREE && window.lottie && window.anime && window.Fuse && window.nlp;
+      out.push(vendorsOk ? 'VENDORS:ok' : 'VENDORS:FAIL');
+      const mapCanvas = document.querySelector('.hq-map-wrap canvas');
+      const mapSvg = document.querySelector('.hq-map');
+      out.push(mapCanvas ? 'MAP:ok(globe3D)' : mapSvg ? 'MAP:ok(svg-fallback)' : 'MAP:FAIL');
+      out.push(document.querySelector('.lottie-radar svg') ? 'LOTTIE:ok' : 'LOTTIE:FAIL');
+
+      // ---------- Phase 3 : console ECHO (chatbot) ----------
+      Codex.router.go('echo-console'); await wait(500);
+      out.push(document.querySelector('.echoc-wrap') ? 'ECHOC-UI:ok' : 'ECHOC-UI:FAIL');
+      const echoInput = document.querySelector('.echoc-input');
+      echoInput.value = 'conjugue eat';
+      document.querySelector('.echoc-inputrow').dispatchEvent(new Event('submit', { cancelable: true }));
+      await wait(900);
+      const lastData = [...document.querySelectorAll('.echoc-data')].pop();
+      out.push(lastData && /ate/.test(lastData.textContent) && /eaten/.test(lastData.textContent)
+        ? 'ECHOC-ASK:ok' : 'ECHOC-ASK:FAIL');
+      out.push(document.querySelectorAll('.echoc-chip').length >= 3 ? 'ECHOC-CHIPS:ok' : 'ECHOC-CHIPS:FAIL');
+      Codex.router.go('hq'); await wait(400);
 
       // ---------- Mission 1 Londres (percée complète) ----------
       const M = Codex.ARCS['en-UK'].missions;
@@ -103,7 +127,7 @@ app.whenReady().then(async () => {
       for (const round of MF[3].rounds) {
         for (const w of round.solution) {
           const chip = [...document.querySelectorAll('.word-bank .word-chip')].find(c => c.textContent === w && !c.disabled);
-          if (!chip) { out.push('NEGO-FR:CHIP ' + w); break; }
+          if (!chip) { out.push('NEGO-FR:NOCHIP ' + w); break; }
           chip.click(); await wait(40);
         }
         document.querySelector('.validate-btn').click(); await wait(2050);
@@ -148,6 +172,6 @@ app.whenReady().then(async () => {
 
   console.log("SMOKE:", JSON.stringify(out));
   console.log("CONSOLE ERRORS:", errors.length ? JSON.stringify(errors.slice(0, 6), null, 2) : "none");
-  const failed = out.some((s) => String(s).includes("FAIL") || String(s).includes("MISSING") || String(s).includes("ERROR") || String(s).includes("NOBTN") || String(s).includes("CHIP"));
+  const failed = out.some((s) => /FAIL|MISSING|ERROR|NOBTN|NOCHIP/.test(String(s)));
   app.exit(failed || errors.length ? 1 : 0);
 });

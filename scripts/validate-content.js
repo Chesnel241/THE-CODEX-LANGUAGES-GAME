@@ -22,7 +22,7 @@ function ok(msg) {
 }
 
 // ---------- 1. Vérification de syntaxe (node --check) ----------
-console.log("\n[1/3] Syntaxe JavaScript");
+console.log("\n[1/4] Syntaxe JavaScript");
 function walk(dir) {
   let files = [];
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -41,11 +41,14 @@ for (const f of jsFiles) {
 if (failures === 0) ok(`${jsFiles.length} fichiers JS valides`);
 
 // ---------- 2. Chargement du contenu ----------
-console.log("\n[2/3] Chargement des données");
+console.log("\n[2/4] Chargement des données");
 global.window = global; // le contenu cible le renderer
 require(path.join(ROOT, "src", "renderer", "js", "data", "content-core.js"));
 require(path.join(ROOT, "src", "renderer", "js", "data", "content-en.js"));
 require(path.join(ROOT, "src", "renderer", "js", "data", "content-fr.js"));
+require(path.join(ROOT, "src", "renderer", "js", "data", "kb-en.js"));
+require(path.join(ROOT, "src", "renderer", "js", "data", "kb-fr.js"));
+require(path.join(ROOT, "src", "renderer", "assets", "lottie", "lottie-data.js"));
 const Codex = global.Codex;
 const C = Codex.CONTENT;
 
@@ -53,11 +56,59 @@ if (C.levels.length !== 5) fail("Il faut exactement 5 niveaux d'agent (GDD §10.
 if (C.countries.length !== 10) fail("Il faut 10 pays Phase 1 (GDD §3.2)");
 for (const country of C.countries) {
   if (country.arcId && !Codex.ARCS[country.arcId]) fail(`Pays ${country.id} : arc inconnu ${country.arcId}`);
+  if (typeof country.lat !== "number" || typeof country.lon !== "number" ||
+      Math.abs(country.lat) > 90 || Math.abs(country.lon) > 180) {
+    fail(`Pays ${country.id} : lat/lon invalides (globe 3D)`);
+  }
 }
 ok(`${Object.keys(Codex.ARCS).length} arcs chargés : ${Object.keys(Codex.ARCS).join(", ")}`);
 
-// ---------- 3. Schéma des missions ----------
-console.log("\n[3/3] Schéma de contenu des missions");
+// ---------- 2 bis. Base de connaissances (chatbot ECHO) ----------
+console.log("\n[3/4] Base de connaissances ECHO");
+for (const arcId of Object.keys(Codex.ARCS)) {
+  const kb = Codex.KB[arcId];
+  if (!kb) { fail(`KB manquante pour l'arc ${arcId}`); continue; }
+  if (!Array.isArray(kb.verbs) || kb.verbs.length < 30) fail(`KB ${arcId} : moins de 30 verbes`);
+  if (!Array.isArray(kb.grammar) || kb.grammar.length < 10) fail(`KB ${arcId} : moins de 10 fiches grammaire`);
+  if (!Array.isArray(kb.phrasebook) || kb.phrasebook.length < 15) fail(`KB ${arcId} : moins de 15 phrases`);
+  if (!Array.isArray(kb.culture) || kb.culture.length < 6) fail(`KB ${arcId} : moins de 6 dossiers culturels`);
+
+  const seen = new Set();
+  for (const v of kb.verbs) {
+    if (seen.has(v.inf)) fail(`KB ${arcId} : verbe dupliqué « ${v.inf} »`);
+    seen.add(v.inf);
+    if (arcId === "en-UK") {
+      for (const k of ["inf", "third", "ger", "past", "pp", "fr", "ex"]) {
+        if (!v[k]) fail(`KB ${arcId} / ${v.inf} : champ manquant « ${k} »`);
+      }
+    } else {
+      if (!Array.isArray(v.present) || v.present.length !== 6) fail(`KB ${arcId} / ${v.inf} : 6 formes au présent requises`);
+      if (!["avoir", "être"].includes(v.aux)) fail(`KB ${arcId} / ${v.inf} : auxiliaire invalide`);
+      for (const k of ["pc", "futur", "imparfait", "en", "ex", "group"]) {
+        if (!v[k]) fail(`KB ${arcId} / ${v.inf} : champ manquant « ${k} »`);
+      }
+    }
+  }
+  for (const g of kb.grammar) {
+    if (!g.id || !g.title || !g.body || !g.ex || !Array.isArray(g.keywords)) fail(`KB ${arcId} : fiche grammaire incomplète (${g.id || g.title})`);
+  }
+  for (const p of kb.phrasebook) {
+    if (!p.phrase || !p.note || !p.theme) fail(`KB ${arcId} : entrée phrasebook incomplète`);
+  }
+  ok(`KB ${arcId} : ${kb.verbs.length} verbes, ${kb.grammar.length} grammaire, ${kb.phrasebook.length} phrases, ${kb.culture.length} culture`);
+}
+
+// Animations Lottie embarquées : structure de base
+for (const name of ["radar", "check"]) {
+  const a = Codex.LOTTIE && Codex.LOTTIE[name];
+  if (!a || !Array.isArray(a.layers) || !a.layers.length || !a.w || !a.h || a.op <= a.ip) {
+    fail(`Animation Lottie « ${name} » invalide`);
+  }
+}
+ok("2 animations Lottie embarquées valides");
+
+// ---------- 4. Schéma des missions ----------
+console.log("\n[4/4] Schéma de contenu des missions");
 
 function checkPercee(label, content) {
   if (!Array.isArray(content.fragments) || content.fragments.length < 2 || content.fragments.length > 6) {

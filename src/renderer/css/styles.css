@@ -1124,3 +1124,110 @@ body.reduced-motion *, body.reduced-motion *::before, body.reduced-motion *::aft
 .mb-1 { margin-bottom: 8px; } .mb-2 { margin-bottom: 16px; }
 .small { font-size: 13.5px; }
 .stars { color: var(--accent-amber); letter-spacing: 2px; }
+
+/* ============================================================
+   PHASE 3 — Console ECHO, globe 3D, Lottie
+   ============================================================ */
+.echoc-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  max-width: 760px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 18px 24px 22px;
+  min-height: 0;
+}
+.echoc-messages {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 6px 2px;
+  min-height: 0;
+}
+.echoc-msg { display: flex; gap: 10px; align-items: flex-start; }
+.echoc-msg .echo-hex { margin-top: 8px; }
+.echoc-agent { justify-content: flex-end; }
+.echoc-bubble {
+  max-width: 82%;
+  background: linear-gradient(180deg, var(--bg-card), #0e1a30);
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  padding: 13px 17px;
+  font-size: 15px;
+  line-height: 1.6;
+  position: relative;
+}
+.echoc-agent .echoc-bubble {
+  background: rgba(0, 212, 255, 0.09);
+  border-color: rgba(0, 212, 255, 0.4);
+  border-bottom-right-radius: 4px;
+}
+.echoc-echo .echoc-bubble {
+  border-color: rgba(155, 126, 255, 0.45);
+  border-top-left-radius: 4px;
+  box-shadow: 0 4px 18px rgba(155, 126, 255, 0.08);
+}
+.echoc-text { font-style: italic; }
+.echoc-data {
+  margin-top: 10px;
+  background: var(--bg-deep);
+  border: 1px solid var(--border-soft);
+  border-left: 3px solid var(--accent-cyan);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-family: var(--font-data);
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  user-select: text;
+}
+.echoc-related { margin-top: 8px; }
+.echoc-listen {
+  position: absolute;
+  top: 8px; right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+  opacity: 0.6;
+  transition: opacity 150ms ease;
+}
+.echoc-listen:hover { opacity: 1; }
+.echoc-suggest { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 0 10px; }
+.echoc-chip {
+  background: rgba(155, 126, 255, 0.07);
+  border: 1px solid rgba(155, 126, 255, 0.45);
+  color: var(--accent-purple);
+  border-radius: 16px;
+  padding: 7px 15px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 160ms ease;
+}
+.echoc-chip:hover { background: rgba(155, 126, 255, 0.16); transform: translateY(-1px); }
+.echoc-inputrow { display: flex; gap: 10px; }
+.echoc-input {
+  flex: 1;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  border-radius: 10px;
+  padding: 13px 17px;
+  font-size: 15px;
+  font-family: var(--font-body);
+}
+.echoc-input:focus { outline: none; border-color: var(--accent-purple); box-shadow: 0 0 14px rgba(155, 126, 255, 0.25); }
+.echoc-send { padding: 13px 22px; }
+
+/* Globe 3D : le canvas remplit la zone carte */
+.hq-map-wrap canvas { border-radius: 12px; }
+
+/* Emplacements Lottie */
+.lottie-radar { width: 34px; height: 34px; flex-shrink: 0; }
+.daily-img > svg { height: 110px; }
+.debrief-check { width: 64px; height: 64px; margin: 0 auto; }
+.debrief-check svg { display: block; }

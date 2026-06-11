@@ -46,8 +46,12 @@ global.window = global; // le contenu cible le renderer
 require(path.join(ROOT, "src", "renderer", "js", "data", "content-core.js"));
 require(path.join(ROOT, "src", "renderer", "js", "data", "content-en.js"));
 require(path.join(ROOT, "src", "renderer", "js", "data", "content-fr.js"));
+require(path.join(ROOT, "src", "renderer", "js", "data", "content-es.js"));
+require(path.join(ROOT, "src", "renderer", "js", "data", "content-de.js"));
 require(path.join(ROOT, "src", "renderer", "js", "data", "kb-en.js"));
 require(path.join(ROOT, "src", "renderer", "js", "data", "kb-fr.js"));
+require(path.join(ROOT, "src", "renderer", "js", "data", "kb-es.js"));
+require(path.join(ROOT, "src", "renderer", "js", "data", "kb-de.js"));
 require(path.join(ROOT, "src", "renderer", "assets", "lottie", "lottie-data.js"));
 const Codex = global.Codex;
 const C = Codex.CONTENT;
@@ -55,20 +59,30 @@ const C = Codex.CONTENT;
 if (C.levels.length !== 5) fail("Il faut exactement 5 niveaux d'agent (GDD §10.2)");
 if (C.countries.length !== 10) fail("Il faut 10 pays Phase 1 (GDD §3.2)");
 for (const country of C.countries) {
-  if (country.arcId && !Codex.ARCS[country.arcId]) fail(`Pays ${country.id} : arc inconnu ${country.arcId}`);
+  if (country.arcId && !Codex.ARCS[country.arcId] && !Codex.ARC_FACTORIES[country.arcId]) {
+    fail(`Pays ${country.id} : arc inconnu ${country.arcId}`);
+  }
   if (typeof country.lat !== "number" || typeof country.lon !== "number" ||
       Math.abs(country.lat) > 90 || Math.abs(country.lon) > 180) {
     fail(`Pays ${country.id} : lat/lon invalides (globe 3D)`);
   }
 }
-ok(`${Object.keys(Codex.ARCS).length} arcs chargés : ${Object.keys(Codex.ARCS).join(", ")}`);
+
+// Arcs à valider : statiques + fabriques bilingues construites dans LES DEUX L1
+const arcsToValidate = [...Object.values(Codex.ARCS)];
+for (const id of Object.keys(Codex.ARC_FACTORIES)) {
+  for (const l1 of ["fr", "en"]) arcsToValidate.push(Codex.getArc(id, l1));
+}
+const arcIds = [...Object.keys(Codex.ARCS), ...Object.keys(Codex.ARC_FACTORIES)];
+ok(`${arcIds.length} arcs chargés : ${arcIds.join(", ")} (fabriques validées en fr + en)`);
 
 // ---------- 2 bis. Base de connaissances (chatbot ECHO) ----------
 console.log("\n[3/4] Base de connaissances ECHO");
-for (const arcId of Object.keys(Codex.ARCS)) {
+for (const arcId of arcIds) {
   const kb = Codex.KB[arcId];
   if (!kb) { fail(`KB manquante pour l'arc ${arcId}`); continue; }
-  if (!Array.isArray(kb.verbs) || kb.verbs.length < 30) fail(`KB ${arcId} : moins de 30 verbes`);
+  const minVerbs = Codex.ARC_FACTORIES[arcId] ? 20 : 30;
+  if (!Array.isArray(kb.verbs) || kb.verbs.length < minVerbs) fail(`KB ${arcId} : moins de ${minVerbs} verbes`);
   if (!Array.isArray(kb.grammar) || kb.grammar.length < 10) fail(`KB ${arcId} : moins de 10 fiches grammaire`);
   if (!Array.isArray(kb.phrasebook) || kb.phrasebook.length < 15) fail(`KB ${arcId} : moins de 15 phrases`);
   if (!Array.isArray(kb.culture) || kb.culture.length < 6) fail(`KB ${arcId} : moins de 6 dossiers culturels`);
@@ -81,19 +95,34 @@ for (const arcId of Object.keys(Codex.ARCS)) {
       for (const k of ["inf", "third", "ger", "past", "pp", "fr", "ex"]) {
         if (!v[k]) fail(`KB ${arcId} / ${v.inf} : champ manquant « ${k} »`);
       }
-    } else {
+    } else if (arcId === "fr-FR") {
       if (!Array.isArray(v.present) || v.present.length !== 6) fail(`KB ${arcId} / ${v.inf} : 6 formes au présent requises`);
       if (!["avoir", "être"].includes(v.aux)) fail(`KB ${arcId} / ${v.inf} : auxiliaire invalide`);
       for (const k of ["pc", "futur", "imparfait", "en", "ex", "group"]) {
         if (!v[k]) fail(`KB ${arcId} / ${v.inf} : champ manquant « ${k} »`);
       }
+    } else {
+      // Schéma générique (es-ES, de-DE) : forms [label, valeur] + search
+      if (!Array.isArray(v.forms) || v.forms.length < 3) fail(`KB ${arcId} / ${v.inf} : moins de 3 lignes de formes`);
+      for (const row of v.forms || []) {
+        if (!Array.isArray(row) || row.length !== 2 || !row[0] || !row[1]) fail(`KB ${arcId} / ${v.inf} : ligne de forme invalide`);
+      }
+      if (!Array.isArray(v.search) || v.search.length < 5) fail(`KB ${arcId} / ${v.inf} : formes de recherche insuffisantes`);
+      if (!v.gloss || !v.gloss.fr || !v.gloss.en) fail(`KB ${arcId} / ${v.inf} : gloss bilingue {fr,en} requis`);
+      if (!v.ex) fail(`KB ${arcId} / ${v.inf} : exemple manquant`);
     }
   }
+
+  // Champs bilingues : si objet, doit contenir fr ET en
+  function biOk(x) { return typeof x === "string" || (x && typeof x.fr === "string" && typeof x.en === "string"); }
   for (const g of kb.grammar) {
-    if (!g.id || !g.title || !g.body || !g.ex || !Array.isArray(g.keywords)) fail(`KB ${arcId} : fiche grammaire incomplète (${g.id || g.title})`);
+    if (!g.id || !biOk(g.title) || !biOk(g.body) || !g.ex || !Array.isArray(g.keywords)) fail(`KB ${arcId} : fiche grammaire incomplète (${g.id || "?"})`);
   }
   for (const p of kb.phrasebook) {
-    if (!p.phrase || !p.note || !p.theme) fail(`KB ${arcId} : entrée phrasebook incomplète`);
+    if (!p.phrase || !biOk(p.note) || !p.theme) fail(`KB ${arcId} : entrée phrasebook incomplète`);
+  }
+  for (const c of kb.culture || []) {
+    if (!biOk(c.title) || !biOk(c.text)) fail(`KB ${arcId} : dossier culturel incomplet`);
   }
   ok(`KB ${arcId} : ${kb.verbs.length} verbes, ${kb.grammar.length} grammaire, ${kb.phrasebook.length} phrases, ${kb.culture.length} culture`);
 }
@@ -182,10 +211,17 @@ function checkSurveillance(label, mission) {
   }
 }
 
-const allMissionIds = new Set();
-const allIntelIds = new Set();
+// Unicité inter-arcs : un même id ne peut appartenir qu'à un seul arc
+// (les fabriques bilingues produisent légitimement deux fois les mêmes ids).
+const missionIdOwner = new Map();
+const intelIdOwner = new Map();
+function claim(map, id, owner, what) {
+  if (map.has(id) && map.get(id) !== owner) fail(`${id} : ${what} dupliqué entre ${map.get(id)} et ${owner}`);
+  map.set(id, owner);
+}
 
-for (const arc of Object.values(Codex.ARCS)) {
+let missionsChecked = 0;
+for (const arc of arcsToValidate) {
   if (!arc.l1 || !["fr", "en"].includes(arc.l1)) fail(`Arc ${arc.id} : l1 invalide`);
   if (!arc.language || !arc.language.tts) fail(`Arc ${arc.id} : language.tts manquant`);
   if (!arc.zone || !arc.zone.name) fail(`Arc ${arc.id} : zone manquante`);
@@ -201,8 +237,8 @@ for (const arc of Object.values(Codex.ARCS)) {
 
   for (const m of arc.missions) {
     const label = m.id;
-    if (allMissionIds.has(m.id)) fail(`${label} : id de mission dupliqué`);
-    allMissionIds.add(m.id);
+    claim(missionIdOwner, m.id, arc.id, "id de mission");
+    missionsChecked += 1;
 
     for (const k of ["type", "title", "location", "difficulty", "durationMin", "xpBase", "brief", "intelCard", "icon", "typeName", "subtitle"]) {
       if (m[k] === undefined) fail(`${label} : champ mission manquant « ${k} »`);
@@ -211,8 +247,7 @@ for (const arc of Object.values(Codex.ARCS)) {
       if (!m.brief || !m.brief[k]) fail(`${label} : champ brief manquant « ${k} »`);
     }
     if (m.intelCard) {
-      if (allIntelIds.has(m.intelCard.id)) fail(`${label} : id d'intel dupliqué ${m.intelCard.id}`);
-      allIntelIds.add(m.intelCard.id);
+      claim(intelIdOwner, m.intelCard.id, arc.id, "id d'intel");
       if (!["verb", "vocab", "grammar"].includes(m.intelCard.kind)) fail(`${label} : intelCard.kind invalide`);
       if (Array.isArray(m.intelCard.quiz)) {
         for (const [i, q] of m.intelCard.quiz.entries()) {
@@ -242,7 +277,7 @@ for (const arc of Object.values(Codex.ARCS)) {
 }
 
 if (failures === 0) {
-  ok(`${allMissionIds.size} missions valides, ${allIntelIds.size} cartes intel, ${C.medals.length} médailles`);
+  ok(`${missionIdOwner.size} missions uniques (${missionsChecked} instances validées), ${intelIdOwner.size} cartes intel, ${C.medals.length} médailles`);
   console.log("\nVALIDATION RÉUSSIE ✓\n");
 } else {
   console.error(`\nVALIDATION ÉCHOUÉE — ${failures} erreur(s)\n`);

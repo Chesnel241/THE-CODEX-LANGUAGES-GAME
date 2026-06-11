@@ -162,8 +162,39 @@ app.whenReady().then(async () => {
       Codex.router.go('settings'); await wait(300);
       out.push(document.querySelector('.settings-wrap') ? 'SETTINGS:ok' : 'SETTINGS:FAIL');
 
+      // ---------- Phase 4 : Arène chronométrée ----------
+      Codex.router.go('arena'); await wait(400);
+      out.push(document.querySelector('.arena-wrap') ? 'ARENA-UI:ok' : 'ARENA-UI:FAIL');
+      document.querySelector('.arena-zone .btn').click(); await wait(500);
+      const firstQ = document.querySelector('.arena-q .choice-btn');
+      out.push(firstQ ? 'ARENA-Q:ok' : 'ARENA-Q:FAIL');
+      if (firstQ) { firstQ.click(); await wait(800); }
+      out.push(document.querySelector('.arena-q .choice-btn') ? 'ARENA-FLOW:ok' : 'ARENA-FLOW:FAIL');
+
+      // ---------- Phase 4 : arc espagnol (fabrique bilingue, l1=fr) ----------
+      Codex.state.data.agent.l1 = 'fr'; Codex.i18n.set('fr'); Codex.state.setL2('es-ES');
+      const ME = Codex.arc().missions;
+      out.push(Codex.arc().id === 'es-ES' && ME.length === 4 ? 'ARC-ES:ok' : 'ARC-ES:FAIL');
+      Codex.router.go('terrain-percee', { mission: ME[0] }); await wait(800);
+      out.push(document.querySelectorAll('.hotspot').length >= 4 ? 'TERRAIN-ES:ok' : 'TERRAIN-ES:FAIL');
+      for (let i = 0; i < 4; i++) {
+        const hs = document.querySelector('.hotspot:not(.cultural):not(.collected)');
+        if (!hs) { out.push('FRAGES' + i + ':MISSING'); break; }
+        hs.click(); await wait(150);
+        document.querySelector('.fragment-popup .btn').click(); await wait(150);
+      }
+      await wait(1900);
+      out.push(document.querySelector('.intel-card') ? 'INTEL-ES:ok' : 'INTEL-ES:FAIL');
+      out.push(/COMER/.test((Codex.echoAI.ask('conjugue comer').data || '')) ? 'ECHOC-ES:ok' : 'ECHOC-ES:FAIL');
+
+      // ---------- Phase 4 : arc allemand (l1=en) ----------
+      Codex.state.data.agent.l1 = 'en'; Codex.i18n.set('en'); Codex.state.setL2('de-DE');
+      out.push(Codex.arc().id === 'de-DE' && Codex.arc().missions.length === 4 ? 'ARC-DE:ok' : 'ARC-DE:FAIL');
+      out.push(/gegessen/.test((Codex.echoAI.ask('conjugate essen').data || '')) ? 'ECHOC-DE:ok' : 'ECHOC-DE:FAIL');
+
       out.push('XP-EN=' + (Codex.state.data.progress['en-UK'] || {}).xp +
                ' XP-FR=' + (Codex.state.data.progress['fr-FR'] || {}).xp +
+               ' XP-ES=' + (Codex.state.data.progress['es-ES'] || {}).xp +
                ' VAULT=' + Codex.state.data.vault.length);
       Codex.music.stop(0.1);
       return out;

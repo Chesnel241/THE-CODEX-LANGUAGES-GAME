@@ -9,64 +9,6 @@ window.Codex = window.Codex || {};
 (function () {
   const { el, esc } = Codex.ui;
 
-  function shuffle(arr) {
-    const a = arr.slice();
-    for (let i = a.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [a[i], a[j]] = [a[j], a[i]];
-    }
-    return a;
-  }
-
-  /** 3 options dont la première est correcte → tableau mélangé { t, ok }. */
-  function shuffle3(correct, wrong1, wrong2) {
-    return shuffle([
-      { t: correct, ok: true },
-      { t: wrong1, ok: false },
-      { t: wrong2, ok: false },
-    ]);
-  }
-
-  /** Génère des questions depuis le Coffre-Fort de la langue active. */
-  function questionsFromVault(count) {
-    const st = Codex.state;
-    const qs = [];
-
-    for (const item of st.vaultItems()) {
-      const d = item.data;
-      // Quiz pré-écrits sur les cartes (verbes & grammaire)
-      if (Array.isArray(d.quiz)) {
-        for (const q of d.quiz) {
-          qs.push({
-            q: q.q,
-            options: q.options.map((t, i) => ({ t, ok: i === q.a })),
-            vaultId: item.id,
-          });
-        }
-      }
-      // Vocab : associer une expression à sa note d'usage
-      if (item.kind === "vocab" && d.entries && d.entries.length >= 3) {
-        const entry = d.entries[Math.floor(Math.random() * d.entries.length)];
-        const others = shuffle(d.entries.filter((e) => e !== entry)).map((e) => e.en);
-        qs.push({
-          q: `« ${entry.note} »`,
-          options: shuffle3(entry.en, others[0], others[1]),
-          vaultId: item.id,
-        });
-      }
-    }
-
-    // Mélange et complète avec la banque de secours de l'arc
-    const picked = shuffle(qs).slice(0, count);
-    if (picked.length < count) {
-      for (const fb of shuffle(Codex.arc().dailyFallback)) {
-        if (picked.length >= count) break;
-        picked.push({ q: fb.q, options: fb.options.map((t, i) => ({ t, ok: i === fb.correct })) });
-      }
-    }
-    return picked;
-  }
-
   Codex.router.register("daily", (screenEl, params = {}) => {
     const st = Codex.state;
     const isChallenge = params.mode === "challenge";
@@ -78,7 +20,7 @@ window.Codex = window.Codex || {};
       return;
     }
 
-    const questions = questionsFromVault(total);
+    const questions = Codex.quiz.generate(total);
     let idx = 0;
     let correct = 0;
 

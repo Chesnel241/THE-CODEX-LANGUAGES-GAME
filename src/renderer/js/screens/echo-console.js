@@ -61,6 +61,7 @@ window.Codex = window.Codex || {};
       });
       messages.appendChild(m);
       Codex.audio.sfx.echo();
+      Codex.audio.speakEcho(reply.text); // ECHO lit sa réponse (si activé)
       scrollDown();
       renderSuggestions(reply.suggestions || []);
     }

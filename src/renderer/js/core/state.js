@@ -20,7 +20,8 @@ window.Codex = window.Codex || {};
     return {
       version: SAVE_VERSION,
       agent: { codeName: "AGENT ZERO", createdAt: new Date().toISOString(), l1: null, l2: null },
-      settings: { volMusic: 60, volSfx: 70, ambience: true, reducedMotion: false },
+      settings: { volMusic: 60, volSfx: 70, ambience: true, reducedMotion: false, echoVoice: true },
+      arena: { best: {}, plays: 0 },
       progress: {}, // par langue : { xp, missions: { id: { bestScore, attempts, completedAt } } }
       vault: [], // { id, lang, kind, title, data, acquiredAt, timesReviewed, lastReviewed }
       medals: [], // { id, earnedAt }
@@ -76,6 +77,7 @@ window.Codex = window.Codex || {};
         this.data.agent = Object.assign(defaultData().agent, loaded.agent);
         this.data.settings = Object.assign(defaultData().settings, loaded.settings);
         this.data.stats = Object.assign(defaultData().stats, loaded.stats);
+        this.data.arena = Object.assign(defaultData().arena, loaded.arena);
       }
 
       this.touchDay();

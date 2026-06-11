@@ -174,7 +174,18 @@ window.Codex = window.Codex || {};
     ambienceNodes = null;
   }
 
-  /** Prononciation via le TTS système — langue par défaut : la L2 active. */
+  /** Meilleure voix disponible : neurales/naturelles de Windows 11 d'abord. */
+  function pickVoice(lang) {
+    const voices = window.speechSynthesis.getVoices();
+    const base = lang.split("-")[0];
+    return voices.find((v) => v.lang === lang && /natural|neural|online/i.test(v.name))
+        || voices.find((v) => v.lang === lang)
+        || voices.find((v) => v.lang.startsWith(base) && /natural|neural|online/i.test(v.name))
+        || voices.find((v) => v.lang.startsWith(base))
+        || null;
+  }
+
+  /** Prononciation L2 via le TTS système — langue par défaut : la L2 active. */
   function speak(text, lang) {
     try {
       const target = lang || (Codex.arc && Codex.arc().language.tts) || "en-GB";
@@ -182,14 +193,36 @@ window.Codex = window.Codex || {};
       const u = new SpeechSynthesisUtterance(text);
       u.lang = target;
       u.rate = 0.92;
-      const v = window.speechSynthesis.getVoices().find((v) => v.lang === target || v.lang.startsWith(target.split("-")[0]));
+      u.volume = Math.max(0, Math.min(1, (settings().volSfx ?? 70) / 100));
+      const v = pickVoice(target);
+      if (v) u.voice = v;
+      window.speechSynthesis.speak(u);
+    } catch { /* TTS indisponible : silencieux */ }
+  }
+
+  /**
+   * Voix d'ECHO (GDD §11.7) : parle dans la langue de l'agent (L1),
+   * débit légèrement accéléré, ton posé. Activable dans les Paramètres.
+   */
+  function speakEcho(text) {
+    try {
+      const s = settings();
+      if (!s.echoVoice) return;
+      const lang = (Codex.state && Codex.state.l1() === "en") ? "en-GB" : "fr-FR";
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = lang;
+      u.rate = 1.06;
+      u.pitch = 1.05;
+      u.volume = Math.max(0, Math.min(1, (s.volSfx ?? 70) / 100));
+      const v = pickVoice(lang);
       if (v) u.voice = v;
       window.speechSynthesis.speak(u);
     } catch { /* TTS indisponible : silencieux */ }
   }
 
   Codex.audio = {
-    sfx, speak, startAmbience, stopAmbience, applyVolume,
+    sfx, speak, speakEcho, startAmbience, stopAmbience, applyVolume,
     /** Accès interne pour le moteur musical. */
     _ensure() { ensureCtx(); return { ctx, musicGain }; },
   };

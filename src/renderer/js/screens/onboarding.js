@@ -17,7 +17,7 @@ window.Codex = window.Codex || {};
 
   // Théâtres verrouillés affichés en teaser (GDD §3.2)
   const TEASERS = [
-    { flag: "🇪🇸", name: "Español" }, { flag: "🇯🇵", name: "日本語" }, { flag: "🇩🇪", name: "Deutsch" },
+    { flag: "🇯🇵", name: "日本語" }, { flag: "🇨🇳", name: "中文" }, { flag: "🇸🇦", name: "العربية" },
   ];
 
   Codex.router.register("onboarding", (screenEl) => {
@@ -68,9 +68,8 @@ window.Codex = window.Codex || {};
         </div>`);
       const cards = step.querySelector(".lang-cards");
 
-      // Théâtres jouables : les arcs dont la narration est dans la L1 du joueur
-      Object.values(Codex.ARCS)
-        .filter((arc) => arc.l1 === l1)
+      // Théâtres jouables : arcs dont la narration existe dans la L1 du joueur
+      Codex.arcsFor(l1)
         .forEach((arc) => {
           const card = el(`
             <div class="lang-card" role="button" tabindex="0">

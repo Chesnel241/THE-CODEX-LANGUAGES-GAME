@@ -50,6 +50,12 @@ window.Codex = window.Codex || {};
 
   function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
+  /** Résout un champ bilingue {fr, en} dans la langue d'interface. */
+  function R(x) {
+    if (x && typeof x === "object" && !Array.isArray(x)) return x[Codex.i18n.get()] ?? x.fr ?? x.en;
+    return x;
+  }
+
   function voice() {
     const fr = Codex.i18n.get() === "fr";
     return {
@@ -73,14 +79,16 @@ window.Codex = window.Codex || {};
     const kb = Codex.KB[arc.id] || {};
     entries = [];
 
-    // Verbes
+    // Verbes — trois schémas : anglais (past/pp), français (present[]/pc),
+    // générique espagnol/allemand (forms/search)
     (kb.verbs || []).forEach((v) => {
-      const forms = arc.id === "en-UK"
-        ? [v.inf, v.past, v.pp, v.third, v.ger]
-        : [v.inf, ...(v.present || []), v.pc, v.futur].map((f) => (f || "").replace(/^j'|^je |^tu |^il\/elle |^nous |^vous |^ils\/elles /, ""));
+      let forms;
+      if (v.search) forms = v.search;
+      else if (v.past) forms = [v.inf, v.past, v.pp, v.third, v.ger];
+      else forms = [v.inf, ...(v.present || []), v.pc, v.futur].map((f) => (f || "").replace(/^j'|^je |^tu |^il\/elle |^nous |^vous |^ils\/elles /, ""));
       entries.push({
         type: "verb", title: v.inf,
-        text: forms.filter(Boolean).join(" ") + " " + (v.fr || v.en || ""),
+        text: forms.filter(Boolean).join(" ") + " " + (R(v.gloss) || v.fr || v.en || ""),
         keywords: forms.filter(Boolean),
         payload: v,
       });
@@ -88,17 +96,17 @@ window.Codex = window.Codex || {};
 
     // Grammaire
     (kb.grammar || []).forEach((g) => entries.push({
-      type: "grammar", title: g.title, text: g.body, keywords: g.keywords || [], payload: g,
+      type: "grammar", title: R(g.title), text: R(g.body), keywords: g.keywords || [], payload: g,
     }));
 
     // Phrasebook (kw = alias bilingues optionnels)
     (kb.phrasebook || []).forEach((p) => entries.push({
-      type: "phrase", title: p.phrase, text: p.note + " " + p.theme, keywords: [p.theme, ...(p.kw || [])], payload: p,
+      type: "phrase", title: p.phrase, text: R(p.note) + " " + p.theme, keywords: [p.theme, ...(p.kw || [])], payload: p,
     }));
 
     // Culture
     (kb.culture || []).forEach((c) => entries.push({
-      type: "culture", title: c.title, text: c.text, keywords: [], payload: c,
+      type: "culture", title: R(c.title), text: R(c.text), keywords: [], payload: c,
     }));
 
     // Cartes intel des missions de l'arc (briefs + exemples)
@@ -221,6 +229,19 @@ window.Codex = window.Codex || {};
     return { text: pick(voice().lead), data, speak: `${v.inf}, ${v.past}, ${v.pp}. ${v.ex}` };
   }
 
+  /** Verbe au schéma générique (espagnol, allemand…) : forms = [label, valeur]. */
+  function verbAnswerGeneric(v) {
+    const lines = [`${v.inf.toUpperCase()} — ${R(v.gloss)}`];
+    for (const [label, value] of v.forms || []) lines.push(`${label} : ${value}`);
+    lines.push(`${L("ex.", "e.g.")} ${v.ex}`);
+    return { text: pick(voice().lead), data: lines.join("\n"), speak: v.speak || v.inf };
+  }
+
+  function verbAnswer(v) {
+    if (v.search) return verbAnswerGeneric(v);
+    return Codex.arc().id === "en-UK" ? verbAnswerEN(v) : verbAnswerFR(v);
+  }
+
   function verbAnswerFR(v) {
     const aux = v.aux === "être" ? `${L("auxiliaire", "auxiliary")} ÊTRE ⚠` : `${L("auxiliaire", "auxiliary")} avoir`;
     const data = [
@@ -263,9 +284,10 @@ window.Codex = window.Codex || {};
     let bestScore = 0;
 
     for (const v of kb.verbs || []) {
-      const forms = arc.id === "en-UK"
-        ? [v.inf, v.past, v.pp, v.third, v.ger]
-        : [v.inf, v.pc, v.futur, v.imparfait, ...(v.present || [])];
+      let forms;
+      if (v.search) forms = v.search;
+      else if (v.past) forms = [v.inf, v.past, v.pp, v.third, v.ger];
+      else forms = [v.inf, v.pc, v.futur, v.imparfait, ...(v.present || [])];
       let score = 0;
       for (const f of forms) {
         if (!f) continue;
@@ -290,13 +312,13 @@ window.Codex = window.Codex || {};
     const v = voice();
     switch (entry.type) {
       case "verb":
-        return Codex.arc().id === "en-UK" ? verbAnswerEN(entry.payload) : verbAnswerFR(entry.payload);
+        return verbAnswer(entry.payload);
       case "grammar":
-        return { text: `${pick(v.lead)} ${entry.payload.title}.`, data: `${entry.payload.body}\n${L("ex.", "e.g.")} ${entry.payload.ex}` };
+        return { text: `${pick(v.lead)} ${R(entry.payload.title)}.`, data: `${R(entry.payload.body)}\n${L("ex.", "e.g.")} ${entry.payload.ex}` };
       case "phrase":
-        return { text: pick(v.lead), data: `« ${entry.payload.phrase} »\n${entry.payload.note}`, speak: entry.payload.phrase };
+        return { text: pick(v.lead), data: `« ${entry.payload.phrase} »\n${R(entry.payload.note)}`, speak: entry.payload.phrase };
       case "culture":
-        return { text: `${pick(v.lead)} ${L("Dossier culturel :", "Cultural file:")} ${entry.payload.title}.`, data: entry.payload.text };
+        return { text: `${pick(v.lead)} ${L("Dossier culturel :", "Cultural file:")} ${R(entry.payload.title)}.`, data: R(entry.payload.text) };
       case "intel": {
         const c = entry.payload.card;
         return { text: `${pick(v.lead)} ${L("Archive de mission :", "Mission archive:")} ${entry.payload.mission.title}.`, data: `${c.lemma} — ${c.tag}\n${(c.examples || []).slice(0, 2).join("\n")}`, speak: c.speakText };
@@ -310,14 +332,27 @@ window.Codex = window.Codex || {};
 
   function suggestions() {
     const arc = Codex.arc();
-    if (Codex.i18n.get() === "fr") {
-      return arc.id === "en-UK"
-        ? ["Conjugue EAT", "Passé de GO", "C'est quoi le present perfect ?", "Comment commander au pub ?", "Comment gagner des médailles ?"]
-        : ["Conjugue ALLER", "Auxiliaire de VENIR ?", "Tu ou vous ?", "Commander un café", "Comment gagner de l'XP ?"];
+    const fr = Codex.i18n.get() === "fr";
+    switch (arc.id) {
+      case "en-UK":
+        return fr
+          ? ["Conjugue EAT", "Passé de GO", "C'est quoi le present perfect ?", "Comment commander au pub ?", "Comment gagner des médailles ?"]
+          : ["Conjugate EAT", "Past of GO", "What is the present perfect?", "How to order at the pub?", "How do I earn XP?"];
+      case "fr-FR":
+        return fr
+          ? ["Conjugue ALLER", "Auxiliaire de VENIR ?", "Tu ou vous ?", "Commander un café", "Comment gagner de l'XP ?"]
+          : ["Conjugate ALLER", "Which verbs take être?", "Tu or vous?", "How to order a coffee?", "How do medals work?"];
+      case "es-ES":
+        return fr
+          ? ["Conjugue COMER", "Ser ou estar ?", "Tú ou usted ?", "Commander au bar", "C'est quoi le pretérito ?"]
+          : ["Conjugate COMER", "Ser or estar?", "Tú or usted?", "How to order at the bar?", "What is the pretérito?"];
+      case "de-DE":
+        return fr
+          ? ["Conjugue ESSEN", "C'est quoi la pince verbale ?", "Du ou Sie ?", "Haben ou sein ?", "Commander au Späti"]
+          : ["Conjugate ESSEN", "What is the verb bracket?", "Du or Sie?", "Haben or sein?", "How to order at the Späti?"];
+      default:
+        return fr ? ["Comment jouer ?", "Comment gagner de l'XP ?"] : ["How to play?", "How do I earn XP?"];
     }
-    return arc.id === "fr-FR"
-      ? ["Conjugate ALLER", "Which verbs take être?", "Tu or vous?", "How to order a coffee?", "How do medals work?"]
-      : ["Conjugate EAT", "Past of GO", "What is the present perfect?", "How to order at the pub?", "How do I earn XP?"];
   }
 
   // ---------- Point d'entrée ----------
@@ -341,7 +376,7 @@ window.Codex = window.Codex || {};
       const verb = findVerb(nq.replace(CONJ_RE, " "));
       CONJ_RE.lastIndex = 0;
       if (verb) {
-        return { ...(Codex.arc().id === "en-UK" ? verbAnswerEN(verb) : verbAnswerFR(verb)), suggestions: suggestions() };
+        return { ...verbAnswer(verb), suggestions: suggestions() };
       }
     }
 

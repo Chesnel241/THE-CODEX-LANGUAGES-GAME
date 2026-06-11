@@ -225,6 +225,28 @@ window.Codex = window.Codex || {};
       "common.back": "← RETOUR",
       "toast.langSwitch": "Théâtre d'opérations : {lang}",
 
+      // Arène (Blitz d'Infiltration, GDD §6.3)
+      "arena.title": "⚡ Blitz d'Infiltration",
+      "arena.sub": "Défi chronométré — score maximum",
+      "arena.rules": "{t} secondes. Bonne réponse : +{b} s et des points multipliés par votre combo. Erreur : −{p} s et combo brisé. Tenez aussi longtemps que possible, Agent.",
+      "arena.start": "LANCER LE BLITZ →",
+      "arena.score": "SCORE",
+      "arena.combo": "COMBO",
+      "arena.best": "RECORD",
+      "arena.newBest": "NOUVEAU RECORD !",
+      "arena.stats": "{n} réponses · {acc} % de précision",
+      "arena.replay": "REJOUER",
+      "hq.arenaTip": "Blitz d'Infiltration",
+
+      // Quiz génératif
+      "quiz.formOf": "{form} de {verb} ?",
+      "quiz.past": "passé",
+      "quiz.pp": "participe passé",
+
+      // Voix ECHO
+      "set.echoVoice": "Voix d'ECHO",
+      "set.echoVoiceSub": "ECHO lit ses interventions à voix haute (synthèse vocale)",
+
       // Console ECHO
       "echoc.title": "🛰️ Console ECHO",
       "echoc.ph": "Posez votre question à ECHO…",
@@ -436,6 +458,28 @@ window.Codex = window.Codex || {};
 
       "common.back": "← BACK",
       "toast.langSwitch": "Theatre of operations: {lang}",
+
+      // Arena (Infiltration Blitz, GDD §6.3)
+      "arena.title": "⚡ Infiltration Blitz",
+      "arena.sub": "Timed challenge — maximum score",
+      "arena.rules": "{t} seconds. Correct answer: +{b}s and points multiplied by your combo. Mistake: −{p}s and the combo breaks. Hold out as long as you can, Agent.",
+      "arena.start": "LAUNCH THE BLITZ →",
+      "arena.score": "SCORE",
+      "arena.combo": "COMBO",
+      "arena.best": "BEST",
+      "arena.newBest": "NEW RECORD!",
+      "arena.stats": "{n} answers · {acc}% accuracy",
+      "arena.replay": "PLAY AGAIN",
+      "hq.arenaTip": "Infiltration Blitz",
+
+      // Generated quiz
+      "quiz.formOf": "{form} of {verb}?",
+      "quiz.past": "past",
+      "quiz.pp": "past participle",
+
+      // ECHO voice
+      "set.echoVoice": "ECHO's voice",
+      "set.echoVoiceSub": "ECHO reads its interventions aloud (speech synthesis)",
 
       // ECHO console
       "echoc.title": "🛰️ ECHO Console",

@@ -19,9 +19,8 @@ window.Codex = window.Codex || {};
   /** Statut d'un pays pour l'agent courant (partagé globe 3D / carte SVG). */
   function countryStatus(c) {
     const st = Codex.state;
-    const arc = c.arcId ? Codex.ARCS[c.arcId] : null;
-    const playable = Boolean(arc && arc.l1 === st.l1());
-    const isNative = Boolean(arc && arc.l1 !== st.l1());
+    const playable = Boolean(c.arcId && Codex.isArcPlayable(c.arcId, st.l1()));
+    const isNative = Boolean(c.arcId && !playable && Codex.ARCS[c.arcId]); // arc statique dans sa langue natale
     const isActive = playable && c.arcId === st.lang();
     const status = isActive ? "active" : playable ? "playable" : isNative ? "native" : "locked";
     const color = isActive ? "#00D4FF" : playable ? "#2ED573" : isNative ? "#9B7EFF" : "#22324d";
@@ -170,6 +169,7 @@ window.Codex = window.Codex || {};
         <div class="hq-actions">
           <button class="icon-btn ${st.dailyAvailable() ? "has-signal" : ""}" data-go="daily" title="${esc(Codex.t("hq.dailyTip"))}">📻</button>
           <button class="icon-btn" data-go="echo-console" title="${esc(Codex.t("hq.echoTip"))}">🛰️</button>
+          <button class="icon-btn" data-go="arena" title="${esc(Codex.t("hq.arenaTip"))}">⚡</button>
           <button class="icon-btn" data-go="vault" title="${esc(Codex.t("hq.vaultTip"))}">🗄️</button>
           <button class="icon-btn" data-go="profile" title="${esc(Codex.t("hq.profileTip"))}">🪪</button>
           <button class="icon-btn" data-go="settings" title="${esc(Codex.t("hq.settingsTip"))}">⚙️</button>
@@ -254,6 +254,27 @@ window.Codex = window.Codex || {};
           <div class="small muted mt-1">${esc(Codex.t("hq.arcDoneSub"))}</div>
         </div>`));
     }
+
+    // Arène — Blitz d'Infiltration
+    const arenaBest = st.data.arena.best[arc.id] || 0;
+    const arenaCard = el(`
+      <div class="card card-hover">
+        <div class="spread">
+          <div>
+            <div class="label amber mb-1">${esc(Codex.t("arena.title"))}</div>
+            <div class="small muted">${esc(Codex.t("arena.sub"))}</div>
+          </div>
+          <div class="center">
+            <div class="label">${esc(Codex.t("arena.best"))}</div>
+            <div class="data cyan" style="font-size:22px">${arenaBest}</div>
+          </div>
+        </div>
+      </div>`);
+    arenaCard.addEventListener("click", () => {
+      Codex.audio.sfx.scanner();
+      Codex.router.go("arena");
+    });
+    side.appendChild(arenaCard);
 
     // Stats rapides
     const done = arc.missions.filter((m) => st.isMissionDone(m.id)).length;

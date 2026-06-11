@@ -13,6 +13,28 @@ Application desktop **Electron**, 100 % hors-ligne, zéro dépendance runtime.
 **🎮 Pour jouer : voir [GUIDE-INSTALLATION.md](GUIDE-INSTALLATION.md)** —
 téléchargez le `.exe` depuis la page Releases, double-cliquez, jouez.
 
+## Nouveautés Phase 4
+
+- ⚡ **Arène — Blitz d'Infiltration** (GDD §6.3) : défi chronométré en continu.
+  Bonne réponse = points × combo + bonus de temps ; erreur = pénalité et combo
+  brisé. Record par langue, nouveau record = +80 XP. Musique qui se tend,
+  battement de cœur sous 10 s.
+- 🇪🇸🇩🇪 **Deux nouvelles langues : Espagnol (Madrid) et Allemand (Berlin)** —
+  4 missions chacune (Percée, Infiltration, Surveillance, Négociation),
+  **arcs bilingues** : jouables par les agents francophones ET anglophones
+  (la narration est générée dans la langue du joueur).
+- 📚 **Bases de connaissances ES/DE** : 50 verbes conjugués (ser/estar, pince
+  verbale allemande, haben/sein…), 24 fiches de grammaire, 32 expressions,
+  14 dossiers culturels — le chatbot ECHO les maîtrise dans les deux langues
+  d'interface.
+- 🗣️ **Voix d'ECHO** : ECHO lit ses interventions et ses réponses de console à
+  voix haute (synthèse vocale dans la langue de l'agent, voix neurales
+  Windows 11 privilégiées, débit GDD §11.7). Activable dans les Paramètres.
+- 🎵 Deux nouveaux thèmes musicaux génératifs : cadence andalouse pour Madrid,
+  motorik minimal pour Berlin.
+- 🧠 Module de quiz unifié (Daily Signal, Challenge de Révision, Arène) avec
+  QCM générés automatiquement depuis les conjugaisons de la base.
+
 ## Nouveautés Phase 3
 
 - 🛰️ **Console ECHO — chatbot intelligent 100 % hors-ligne** : ECHO maîtrise

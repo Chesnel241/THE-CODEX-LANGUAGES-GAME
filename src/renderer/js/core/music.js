@@ -34,6 +34,42 @@ window.Codex = window.Codex || {};
       bass: { type: "triangle", gain: 0.075 },
       hat: { freq: 7000, gain: 0.012 },
     },
+    // Madrid — Am · G · F · E (cadence andalouse), guitare flamenca
+    "es-ES": {
+      bpm: 112,
+      beatsPerBar: 4,
+      swing: 0.08,
+      chords: [
+        [57, 60, 64], // Am
+        [55, 59, 62], // G
+        [53, 57, 60], // F
+        [52, 56, 59], // E
+      ],
+      bassOffset: -12,
+      scale: [57, 59, 60, 62, 64, 65, 68, 69], // mode phrygien dominant coloré
+      lead: { type: "triangle", gain: 0.04, cutoff: 2600 },
+      pad: { type: "sawtooth", gain: 0.014, detune: 6, cutoff: 1100 },
+      bass: { type: "triangle", gain: 0.08 },
+      hat: { freq: 7500, gain: 0.014 },
+    },
+    // Berlin — Am · Am · F · G, motorik minimal, séquenceur
+    "de-DE": {
+      bpm: 122,
+      beatsPerBar: 4,
+      swing: 0,
+      chords: [
+        [57, 60, 64], // Am
+        [57, 60, 64], // Am
+        [53, 57, 60], // F
+        [55, 59, 62], // G
+      ],
+      bassOffset: -24,
+      scale: [57, 60, 62, 64, 67, 69, 72, 74], // A mineur pentatonique étendu
+      lead: { type: "square", gain: 0.022, cutoff: 1900 },
+      pad: { type: "sawtooth", gain: 0.011, detune: 4, cutoff: 700 },
+      bass: { type: "square", gain: 0.055 },
+      hat: { freq: 8000, gain: 0.011 },
+    },
     // Paris — Dm · Gm · A7 · Dm, 3/4 (valse manouche), accordéon
     "fr-FR": {
       bpm: 132,

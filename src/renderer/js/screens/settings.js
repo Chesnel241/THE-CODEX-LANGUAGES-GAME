@@ -75,6 +75,13 @@ window.Codex = window.Codex || {};
       else Codex.audio.stopAmbience();
     }));
 
+    wrap.appendChild(toggleRow(Codex.t("set.echoVoice"), Codex.t("set.echoVoiceSub"), s.echoVoice, (on) => {
+      s.echoVoice = on;
+      st.save();
+      if (on) Codex.audio.speakEcho(Codex.t("echoc.intro", { name: st.data.agent.codeName }));
+      else window.speechSynthesis.cancel();
+    }));
+
     // ----- ACCESSIBILITÉ & LANGUE -----
     wrap.appendChild(el(`<div class="label mt-2">${esc(Codex.t("set.access"))}</div>`));
 
@@ -102,9 +109,11 @@ window.Codex = window.Codex || {};
         Codex.audio.sfx.stamp();
         st.data.agent.l1 = newL1;
         Codex.i18n.set(newL1);
-        // Bascule sur l'arc dont la narration correspond à la nouvelle L1
-        const match = Object.values(Codex.ARCS).find((a) => a.l1 === newL1);
-        if (match) st.setL2(match.id);
+        // Conserve la L2 si elle reste jouable, sinon premier arc disponible
+        if (!Codex.isArcPlayable(st.lang(), newL1)) {
+          const first = Codex.arcsFor(newL1)[0];
+          if (first) st.setL2(first.id);
+        }
         st.save();
         Codex.router.go("settings");
       });

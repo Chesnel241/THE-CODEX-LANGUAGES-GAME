@@ -22,8 +22,12 @@ require(path.join(ROOT, "src/renderer/js/data/i18n.js"));
 require(path.join(ROOT, "src/renderer/js/data/content-core.js"));
 require(path.join(ROOT, "src/renderer/js/data/content-en.js"));
 require(path.join(ROOT, "src/renderer/js/data/content-fr.js"));
+require(path.join(ROOT, "src/renderer/js/data/content-es.js"));
+require(path.join(ROOT, "src/renderer/js/data/content-de.js"));
 require(path.join(ROOT, "src/renderer/js/data/kb-en.js"));
 require(path.join(ROOT, "src/renderer/js/data/kb-fr.js"));
+require(path.join(ROOT, "src/renderer/js/data/kb-es.js"));
+require(path.join(ROOT, "src/renderer/js/data/kb-de.js"));
 
 const Codex = global.Codex;
 
@@ -135,9 +139,58 @@ check("aide EN — medals", /Precision|Ghost|Lightning/i.test(full(r)));
 r = Codex.echoAI.ask("what is the daily signal");
 check("aide EN — daily signal", /micro-mission|Vault|50/i.test(full(r)));
 
+// ================= Arc ESPAGNOL (fabrique bilingue) =================
+console.log("\n[3/6] Arc es-ES — joueur FR puis EN");
+setLang("fr", "es-ES");
+
+r = Codex.echoAI.ask("Conjugue COMER");
+check("« Conjugue COMER » → como / comí", /como/.test(full(r)) && /comí/.test(full(r)), full(r).slice(0, 90));
+check("…avec gloss français", /manger/.test(full(r)));
+
+r = Codex.echoAI.ask("comí");
+check("forme seule « comí » → retrouve COMER", /COMER/.test(full(r)));
+
+r = Codex.echoAI.ask("ser ou estar ?");
+check("grammaire — ser/estar", /essence|identité|état/i.test(full(r)));
+
+r = Codex.echoAI.ask("commander une bière au bar");
+check("phrasebook ES — caña", /caña/i.test(full(r)));
+
+setLang("en", "es-ES");
+r = Codex.echoAI.ask("Conjugate TENER");
+check("EN player: « Conjugate TENER » → tengo", /tengo/.test(full(r)));
+check("…gloss anglais", /to have/.test(full(r)));
+
+r = Codex.echoAI.ask("what is the sobremesa");
+check("culture ES en anglais", /after the meal|coffee/i.test(full(r)));
+
+// ================= Arc ALLEMAND (fabrique bilingue) =================
+console.log("\n[4/6] Arc de-DE — joueur EN puis FR");
+setLang("en", "de-DE");
+
+r = Codex.echoAI.ask("Conjugate ESSEN");
+check("« Conjugate ESSEN » → isst / gegessen", /isst/.test(full(r)) && /gegessen/.test(full(r)), full(r).slice(0, 90));
+
+r = Codex.echoAI.ask("haben or sein in the perfekt?");
+check("grammaire — haben/sein", /movement|gehen|kommen/i.test(full(r)));
+
+r = Codex.echoAI.ask("du or sie?");
+check("grammaire — du/Sie", /strangers|Berlin|doubt/i.test(full(r)));
+
+setLang("fr", "de-DE");
+r = Codex.echoAI.ask("conjugue GEHEN");
+check("FR player : « conjugue GEHEN » → ging/gegangen", /ging/.test(full(r)) && /gegangen/.test(full(r)));
+check("…signale l'auxiliaire sein", /sein/i.test(full(r)));
+
+r = Codex.echoAI.ask("c'est quoi le Feierabend ?");
+check("culture DE en français", /journée de travail|sacrée/i.test(full(r)));
+
+r = Codex.echoAI.ask("la pince verbale");
+check("grammaire — pince verbale", /gegessen|2ᵉ position|fin/i.test(full(r)));
+
 // ================= Index & cohérence =================
-console.log("\n[3/4] Index & cohérence");
-check("index non vide (arc FR actif)", Codex.echoAI._entriesCount() >= 80, String(Codex.echoAI._entriesCount()));
+console.log("\n[5/6] Index & cohérence");
+check("index riche (arc actif de-DE)", Codex.echoAI._entriesCount() >= 70, String(Codex.echoAI._entriesCount()));
 const kbEN = Codex.KB["en-UK"];
 const kbFR = Codex.KB["fr-FR"];
 check("≥ 55 verbes irréguliers anglais", kbEN.verbs.length >= 55, String(kbEN.verbs.length));
@@ -167,8 +220,20 @@ for (const v of kbEN.verbs) {
 }
 check("verbes EN : 5 formes + sens + exemple", enOk);
 
+const kbES = Codex.KB["es-ES"];
+const kbDE = Codex.KB["de-DE"];
+check("≥ 20 verbes espagnols et allemands", kbES.verbs.length >= 20 && kbDE.verbs.length >= 20);
+let genOk = true;
+for (const v of [...kbES.verbs, ...kbDE.verbs]) {
+  if (!Array.isArray(v.forms) || v.forms.length < 3) genOk = false;
+  if (!Array.isArray(v.search) || v.search.length < 5) genOk = false;
+  if (!v.gloss || !v.gloss.fr || !v.gloss.en) genOk = false;
+}
+check("verbes ES/DE : formes + recherche + gloss bilingue", genOk);
+check("fabriques : 4 arcs pour chaque L1", Codex.arcsFor("fr").length === 3 && Codex.arcsFor("en").length === 3);
+
 // ================= Performance =================
-console.log("\n[4/4] Performance");
+console.log("\n[6/6] Performance");
 const t0 = Date.now();
 for (let i = 0; i < 50; i++) Codex.echoAI.ask("conjugue aller et donne moi le futur");
 const ms = Date.now() - t0;

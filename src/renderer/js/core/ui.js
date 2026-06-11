@@ -85,6 +85,7 @@ window.Codex = window.Codex || {};
         Codex.audio.sfx.echo();
         if (textEl.dataset.tw) clearInterval(Number(textEl.dataset.tw));
         typewrite(textEl, text);
+        Codex.audio.speakEcho(text); // voix d'ECHO (si activée)
       },
       hintsUsed: () => (hints === Infinity ? 0 : hints - hintsLeft),
     };

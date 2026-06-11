@@ -1231,3 +1231,27 @@ body.reduced-motion *, body.reduced-motion *::before, body.reduced-motion *::aft
 .daily-img > svg { height: 110px; }
 .debrief-check { width: 64px; height: 64px; margin: 0 auto; }
 .debrief-check svg { display: block; }
+
+/* ============================================================
+   PHASE 4 — Arène (Blitz d'Infiltration)
+   ============================================================ */
+.arena-wrap { flex: 1; display: flex; flex-direction: column; max-width: 760px; margin: 0 auto; width: 100%; padding: 20px 24px; min-height: 0; }
+.arena-hud {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  padding: 14px 20px;
+  box-shadow: var(--shadow-card);
+}
+.arena-stat { text-align: center; min-width: 70px; }
+.arena-stat .data { font-size: 22px; }
+.arena-score { color: var(--accent-cyan); }
+.arena-timer-wrap { flex: 1; display: flex; align-items: center; gap: 10px; }
+.arena-timer-bar { flex: 1; height: 12px; background: var(--bg-surface); border-radius: 7px; overflow: hidden; border: 1px solid var(--border-soft); }
+.arena-timer-fill { height: 100%; width: 100%; border-radius: 7px; background: var(--accent-green); transition: width 250ms linear, background 400ms ease; }
+.arena-time { min-width: 44px; text-align: right; font-size: 17px; }
+.arena-zone { flex: 1; display: flex; flex-direction: column; padding-top: 22px; min-height: 0; }
+.arena-q { animation: popIn 220ms var(--ease-pop); }

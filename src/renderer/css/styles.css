@@ -1431,3 +1431,16 @@ body.reduced-motion *, body.reduced-motion *::before, body.reduced-motion *::aft
 .lang-card-flag .flag { margin: 0; box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 6px 18px rgba(0,0,0,0.5); }
 .lang-card.locked .lang-card-flag .flag { filter: grayscale(0.7) brightness(0.7); }
 .lang-progress-row .lang-flag .flag { margin: 0; }
+
+/* ============================================================
+   PHASE 6 — Scènes 3D temps réel
+   ============================================================ */
+.scene3d-canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
+/* En mode 3D : les couches CSS de substitution s'effacent, le cadrage reste */
+.has-3d .scene-prop, .has-3d .scene-skyline, .has-3d .scene-floor { display: none; }
+.has-3d .scene-glow { opacity: 0.45; }
+.has-3d .scene-dust i { background: rgba(255, 255, 255, 0.10); }
+.has-3d .scene-vignette { background: radial-gradient(ellipse at 50% 42%, transparent 38%, rgba(0, 0, 0, 0.66) 100%); }
+/* Hotspots ancrés en 3D : transition désactivée (position pilotée par frame) */
+.has-3d .hotspot { transition: background 200ms ease; }
+.has-3d .hotspot:hover { transform: translate(-50%, -50%) scale(1.18); }

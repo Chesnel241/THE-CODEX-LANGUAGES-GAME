@@ -166,11 +166,18 @@ window.Codex = window.Codex || {};
   }
 
   /**
-   * Construit la scène 2.5D : couches d'atmosphère (halo lumineux, sol en
-   * perspective, skyline, poussière animée) + props emoji.
+   * Construit la scène de terrain : environnement 3D temps réel (three.js)
+   * quand WebGL est disponible, sinon couches CSS 2.5D (halo, sol, skyline,
+   * poussière) + props emoji. Les hotspots ajoutés par les moteurs sont
+   * automatiquement ancrés dans le monde 3D (projection par frame).
    */
   function buildScene(sceneDef) {
     const scene = el(`<div class="terrain-scene scene-${esc(sceneDef.ambiance)}"></div>`);
+
+    // Tentative 3D — repli silencieux sur les couches CSS
+    if (Codex.scene3d && Codex.scene3d.mount(scene, sceneDef)) {
+      scene.classList.add("has-3d");
+    }
 
     scene.appendChild(el(`<div class="scene-glow"></div>`));
     scene.appendChild(el(`<div class="scene-skyline"></div>`));

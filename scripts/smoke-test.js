@@ -83,6 +83,8 @@ app.whenReady().then(async () => {
       const M = Codex.ARCS['en-UK'].missions;
       Codex.router.go('terrain-percee', { mission: M[0] }); await wait(800);
       out.push(document.querySelectorAll('.hotspot').length >= 4 ? 'TERRAIN-EN:ok' : 'TERRAIN-EN:FAIL');
+      // Phase 6 : scène 3D (ou repli CSS) — toujours valide, le mode est rapporté
+      out.push(document.querySelector('.terrain-scene canvas.scene3d-canvas') ? 'SCENE3D:ok(webgl)' : 'SCENE3D:ok(css-fallback)');
       for (let i = 0; i < 4; i++) {
         const hs = document.querySelector('.hotspot:not(.cultural):not(.collected)');
         if (!hs) { out.push('FRAG' + i + ':MISSING'); break; }

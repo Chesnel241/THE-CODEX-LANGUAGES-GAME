@@ -13,6 +13,22 @@ Application desktop **Electron**, 100 % hors-ligne, zéro dépendance runtime.
 **🎮 Pour jouer : voir [GUIDE-INSTALLATION.md](GUIDE-INSTALLATION.md)** —
 téléchargez le `.exe` depuis la page Releases, double-cliquez, jouez.
 
+## Nouveautés Phase 6 — SCÈNES 3D TEMPS RÉEL
+
+- 🎮 **Chaque mission se joue désormais dans un environnement 3D** (three.js) :
+  8 décors low-poly construits procéduralement — restaurant aux lampes
+  suspendues, pub au comptoir de cuivre, terrasse de café, open space aux
+  écrans lumineux, marché aux auvents rayés, rue nocturne aux fenêtres
+  allumées, quai de métro carrelé, gala au lustre doré.
+- 🧍 **PNJ low-poly** en attente dans les scènes, éclairages dynamiques par
+  ambiance (lampes ponctuelles, néons, guirlandes), brouillard de profondeur.
+- 🎥 **Caméra vivante** : travelling d'entrée, dérive lente, parallaxe à la
+  souris (désactivée en mode animations réduites).
+- 📌 **Hotspots ancrés dans le monde 3D** : les points d'intérêt des missions
+  sont projetés depuis l'espace 3D à chaque frame, avec anneaux lumineux au
+  sol — sans aucun changement dans les moteurs de mission ni les tests.
+- 🪂 **Repli automatique** sur les scènes CSS 2.5D si WebGL est indisponible.
+
 ## Nouveautés Phase 5 — UI « HOLO-OS »
 
 - 🔤 **Typographie embarquée** : Space Mono + Inter (OFL) vendorées en woff2

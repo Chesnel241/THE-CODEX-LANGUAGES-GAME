@@ -58,7 +58,8 @@ Codex.engines = Codex.engines || {};
     const fill = topbar.querySelector(".suspicion-fill");
     const valEl = topbar.querySelector(".suspicion-val");
 
-    const scene = buildScene(content.scene);
+    // Dialogue face à face : la scène 3D place un interlocuteur côté gauche
+    const scene = buildScene({ ...content.scene, focusNpc: true });
     screenEl.appendChild(scene);
 
     const dialogueZone = el(`<div class="dialogue-zone"></div>`);

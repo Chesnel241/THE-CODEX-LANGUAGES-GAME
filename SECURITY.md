@@ -16,16 +16,18 @@ appliquées et le modèle de menace retenu.
 
 ## Librairies vendorées (politique de chaîne d'approvisionnement)
 
-Le renderer embarque 5 librairies open source, **copiées localement** dans
+Le renderer embarque ces librairies open source, **copiées localement** dans
 `src/renderer/vendor/` (la CSP `script-src 'self'` interdit tout CDN) :
 
 | Librairie | Version épinglée | Licence | Usage |
 |---|---|---|---|
-| three | 0.149.0 | MIT | Globe 3D du QG |
+| three | 0.149.0 | MIT | Globe 3D du QG + scènes de mission |
 | lottie-web | 5.x | MIT | Animations vectorielles (créations originales embarquées) |
 | animejs | 3.2.2 | MIT | Micro-animations UI |
 | fuse.js | 6.6.2 | Apache-2.0 | Recherche floue du chatbot ECHO |
 | compromise | 14.x | MIT | Conjugaison anglaise NLP hors base |
+| topojson-client | 3.x | ISC | Décodage des frontières mondiales (globe) |
+| world-atlas | 2.x | ISC / Natural Earth (domaine public) | Frontières Natural Earth 110m (JS embarqué) |
 | @fontsource/inter + space-mono | 5.x | OFL-1.1 | Typographie embarquée (GDD §12.3) |
 | lucide-static | 1.x | ISC | Icônes vectorielles (extraites en JS embarqué) |
 

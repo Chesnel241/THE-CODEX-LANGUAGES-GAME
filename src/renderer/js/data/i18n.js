@@ -48,6 +48,13 @@ window.Codex = window.Codex || {};
       "hq.settingsTip": "Paramètres",
       "hq.dailyTip": "Daily Agent Signal",
       "hq.levelMax": "NIVEAU MAX",
+      "hq.panelHint": "Survolez un marqueur pour le renseignement pays",
+      "hq.panelLang": "Langue",
+      "hq.panelStatus": "Statut",
+      "hq.stActive": "ZONE ACTIVE",
+      "hq.stPlayable": "DÉPLOIEMENT POSSIBLE",
+      "hq.stNative": "LANGUE OPÉRATIONNELLE",
+      "hq.stLocked": "VERROUILLÉ · PHASE 3",
 
       // Liste de missions
       "missions.locked": "VERROUILLÉE",
@@ -294,6 +301,13 @@ window.Codex = window.Codex || {};
       "hq.settingsTip": "Settings",
       "hq.dailyTip": "Daily Agent Signal",
       "hq.levelMax": "MAX LEVEL",
+      "hq.panelHint": "Hover a marker for country intelligence",
+      "hq.panelLang": "Language",
+      "hq.panelStatus": "Status",
+      "hq.stActive": "ACTIVE ZONE",
+      "hq.stPlayable": "DEPLOYMENT AVAILABLE",
+      "hq.stNative": "OPERATIONAL LANGUAGE",
+      "hq.stLocked": "LOCKED · PHASE 3",
 
       "missions.locked": "LOCKED",
       "missions.new": "NEW",

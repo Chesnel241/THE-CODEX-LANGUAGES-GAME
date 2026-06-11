@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-11T14:12:37.794Z",
+  "generatedAt": "2026-06-11T15:46:13.345Z",
   "files": [
     {
       "file": "three.min.js",
@@ -45,6 +45,15 @@
       "global": "nlp",
       "sha256": "15869eab94595e5f8e52466c9a41cd7910ecd08dc1f3570f2f8177426cca3882",
       "bytes": 352811
+    },
+    {
+      "file": "topojson-client.min.js",
+      "pkg": "topojson-client",
+      "version": "3.1.0",
+      "license": "ISC",
+      "global": "topojson",
+      "sha256": "25cd02ae486cc5063e0215a4e4cfb15de83700c87ac48bac4d57dc6aaf3ebb89",
+      "bytes": 7169
     },
     {
       "file": "fonts/inter-400.woff2",
@@ -102,6 +111,15 @@
       "global": "Codex.ICONS",
       "sha256": "8ad78d230b4f5f6bd6d5ac3ed37ab317ceb1e373eb39d2c170be121f97e3ffda",
       "bytes": 5872
+    },
+    {
+      "file": "world-data.js",
+      "pkg": "world-atlas",
+      "version": "2.0.2",
+      "license": "ISC / Natural Earth (domaine public)",
+      "global": "Codex.WORLD_TOPO",
+      "sha256": "8bb788266ea9e72501e201a28011dc5c9f80ed15e74e9743118c3b9d805fd7d0",
+      "bytes": 107993
     }
   ]
 }

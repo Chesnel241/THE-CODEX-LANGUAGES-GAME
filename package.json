@@ -1,7 +1,7 @@
 {
   "name": "the-codex",
   "productName": "THE CODEX",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "THE CODEX — Jeu d'espionnage linguistique. La langue est ton arme.",
   "main": "src/main/main.js",
   "private": true,
@@ -29,6 +29,8 @@
     "fuse.js": "^6.6.2",
     "lottie-web": "^5.13.0",
     "lucide-static": "^1.17.0",
-    "three": "^0.149.0"
+    "three": "^0.149.0",
+    "topojson-client": "^3.1.0",
+    "world-atlas": "^2.0.2"
   }
 }

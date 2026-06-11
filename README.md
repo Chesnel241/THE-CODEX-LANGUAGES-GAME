@@ -13,6 +13,24 @@ Application desktop **Electron**, 100 % hors-ligne, zéro dépendance runtime.
 **🎮 Pour jouer : voir [GUIDE-INSTALLATION.md](GUIDE-INSTALLATION.md)** —
 téléchargez le `.exe` depuis la page Releases, double-cliquez, jouez.
 
+## Nouveautés Phase 7 — GLOBE RÉEL, AVATARS & CINÉMATIQUE
+
+- 🌍 **Vrai globe stratégique** : les continents et frontières **Natural
+  Earth** (domaine public, via `world-atlas` + `topojson-client` vendorés)
+  sont peints en texture équirectangulaire au montage — terres lumineuses,
+  côtes au halo cyan, frontières fines, graticule, atmosphère et étoiles.
+- 🛰️ **Panneau de renseignement pays** façon jeu de stratégie : survolez un
+  marqueur du globe → drapeau, nom, langue, statut, missions accomplies et XP.
+- 🧑‍🚀 **Vrais avatars stylisés** (`characters.js`) : jambes, torse, bras,
+  tête expressive, chevelures variées, bonnets, chignons, lunettes, écharpe
+  d'agent — respiration, regard qui balaie, cycle de marche procédural.
+- 🚶 **Agent ZERO incarné** : votre agent apparaît dans chaque scène et
+  **marche jusqu'aux points d'intérêt** que vous cliquez avant de les activer.
+- 🎬 **Intro cinématique** : plan orbital de 2 s avec letterbox (barres noires
+  glissantes) à l'entrée de chaque scène — désactivée en animations réduites.
+- 🗣️ **Interlocuteur face caméra** dans les dialogues d'infiltration, éclairé
+  en douche chaude, carte de dialogue déportée façon visual novel.
+
 ## Nouveautés Phase 6 — SCÈNES 3D TEMPS RÉEL
 
 - 🎮 **Chaque mission se joue désormais dans un environnement 3D** (three.js) :

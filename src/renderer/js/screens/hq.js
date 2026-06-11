@@ -50,29 +50,63 @@ window.Codex = window.Codex || {};
     }
   }
 
+  /** Panneau de renseignement pays façon jeu de stratégie (globe 3D). */
+  function countryPanelHtml(c) {
+    if (!c) {
+      return `<div class="globe-panel-empty">
+        <div class="label cyan">SAT-INTEL</div>
+        <div class="small muted mt-1">${esc(Codex.t("hq.panelHint"))}</div>
+      </div>`;
+    }
+    const st = Codex.state;
+    const stKey = c.isActive ? "hq.stActive" : c.playable ? "hq.stPlayable" : c.isNative ? "hq.stNative" : "hq.stLocked";
+    const stCls = c.isActive ? "cyan" : c.playable ? "green" : c.isNative ? "purple" : "amber";
+    let rows = `
+      <div class="spread small"><span class="muted">${esc(Codex.t("hq.panelLang"))}</span><span class="data">${esc(c.lang)}</span></div>
+      <div class="spread small"><span class="muted">${esc(Codex.t("hq.panelStatus"))}</span><span class="data ${stCls}">${esc(Codex.t(stKey))}</span></div>`;
+    if (c.playable && c.arcId) {
+      const arc = Codex.getArc(c.arcId, st.l1());
+      const p = st.data.progress[c.arcId] || { xp: 0, missions: {} };
+      const done = arc ? arc.missions.filter((m) => p.missions[m.id] && p.missions[m.id].completedAt).length : 0;
+      rows += `
+      <div class="spread small"><span class="muted">${esc(Codex.t("hq.missions"))}</span><span class="data">${done}/${arc ? arc.missions.length : 0}</span></div>
+      <div class="spread small"><span class="muted">XP</span><span class="data cyan">${p.xp}</span></div>
+      <div class="small cyan mt-1">${esc(Codex.t("hq.activeHint"))}</div>`;
+    } else if (c.isNative) {
+      rows += `<div class="small muted mt-1">${esc(Codex.t("hq.nativeLangSub"))}</div>`;
+    }
+    return `
+      <div class="globe-panel-head"><span class="gp-flag"></span><span class="gp-name">${esc(c.name)}</span></div>
+      <div class="globe-panel-body">${rows}</div>`;
+  }
+
   /** Globe 3D (three.js) — retourne true si monté, false → repli SVG. */
   function buildGlobe(wrap) {
     if (!Codex.globe) return false;
-    const tooltip = el(`<div class="map-tooltip" style="display:none"></div>`);
+    const panel = el(`<div class="globe-panel"></div>`);
     const countries = Codex.CONTENT.countries.map((c) => {
       const s = countryStatus(c);
       return { ...c, ...s };
     });
+    let shown; // undefined = jamais rendu (≠ null = panneau vide)
+    function showPanel(c) {
+      const key = c ? c.name : null;
+      if (shown === key) return;
+      if (c) Codex.audio.sfx.hover();
+      shown = key;
+      panel.innerHTML = countryPanelHtml(c);
+      panel.classList.toggle("on", Boolean(c));
+      const slot = panel.querySelector(".gp-flag");
+      if (slot && c && c.arcId && Codex.FLAG_BY_LANG[c.arcId]) slot.appendChild(Codex.ui.flag(c.arcId, { w: 26 }));
+    }
     const ctrl = Codex.globe.mount(wrap, {
       countries,
       onSelect: (c) => { if (c.playable) selectCountry(c); else Codex.audio.sfx.error(); },
-      onHover: (c, x, y) => {
-        if (!c) { tooltip.style.display = "none"; return; }
-        Codex.audio.sfx.hover();
-        tooltip.style.display = "block";
-        tooltip.innerHTML = tooltipHtml(c, c);
-        const rect = wrap.getBoundingClientRect();
-        tooltip.style.left = `${x - rect.left}px`;
-        tooltip.style.top = `${y - rect.top}px`;
-      },
+      onHover: (c) => showPanel(c),
     });
     if (!ctrl) return false;
-    wrap.appendChild(tooltip);
+    showPanel(null);
+    wrap.appendChild(panel);
     return true;
   }
 

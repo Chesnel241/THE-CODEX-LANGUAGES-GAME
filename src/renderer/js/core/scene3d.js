@@ -63,18 +63,12 @@ window.Codex = window.Codex || {};
     return m;
   }
 
-  /** PNJ low-poly : corps capsule, tête sphère, oscillation d'attente. */
+  /** PNJ : avatar stylisé complet (characters.js) — animé en idle. */
+  let npcSeed = 1;
   function npc(parent, color, x, z, ry = 0) {
-    const THREE = window.THREE;
-    const g = new THREE.Group();
-    const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.26, 0.7, 3, 8), mat(color));
-    body.position.y = 0.75;
-    const head = new THREE.Mesh(new THREE.SphereGeometry(0.21, 10, 8), mat(0xe8c4a0));
-    head.position.y = 1.45;
-    g.add(body, head);
+    const g = Codex.characters.create({ top: color, seed: npcSeed++ });
     g.position.set(x, 0, z);
     g.rotation.y = ry;
-    g.userData.bobPhase = Math.random() * Math.PI * 2;
     parent.add(g);
     return g;
   }
@@ -392,8 +386,21 @@ window.Codex = window.Codex || {};
 
     const camera = new THREE.PerspectiveCamera(50, W() / H(), 0.1, 60);
     const camBase = { x: 0, y: 4.1, z: 11.6 };
-    camera.position.set(camBase.x, camBase.y, camBase.z + 1.6); // dolly d'entrée
+    camera.position.set(camBase.x, camBase.y, camBase.z);
     camera.lookAt(0, 1.3, -2);
+
+    // Letterbox cinématique pendant l'intro orbitale
+    const reducedPre = Codex.state && Codex.state.data.settings.reducedMotion;
+    const INTRO = (reducedPre || window.__CODEX_TEST__) ? 0 : 2.0;
+    let bars = null;
+    if (INTRO > 0) {
+      bars = document.createElement("div");
+      bars.className = "cine-bars";
+      bars.innerHTML = '<i></i><i></i>';
+      container.appendChild(bars);
+      setTimeout(() => { if (bars) bars.classList.add("out"); }, INTRO * 1000 - 350);
+      setTimeout(() => { if (bars) { bars.remove(); bars = null; } }, INTRO * 1000 + 400);
+    }
 
     // Lumières globales
     scene.add(new THREE.AmbientLight(P.night ? 0x33405e : 0x6a6258, P.night ? 1.1 : 0.8));
@@ -407,6 +414,38 @@ window.Codex = window.Codex || {};
     const world = new THREE.Group();
     scene.add(world);
     (ENVS[sceneDef.ambiance] || ENVS.street)(world, P);
+
+    // Agent ZERO — manteau sombre, écharpe cyan, dos à la caméra
+    // (seed 8 : chevelure simple, ni chapeau ni lunettes)
+    const agent = Codex.characters.create({ coat: true, top: 0x1c2c44, bottom: 0x141e2e, hair: 0x1a140e, seed: 8 });
+    agent.position.set(0.2, 0, 3.1);
+    agent.rotation.y = Math.PI;
+    world.add(agent);
+    let agentWalk = null; // { from, to, start, dur, onDone }
+
+    function walkAgentTo(target, onDone) {
+      const from = agent.position.clone();
+      const to = target.clone();
+      to.y = 0;
+      const dist = from.distanceTo(to);
+      if (dist < 0.25) { if (onDone) onDone(); return; }
+      agentWalk = { from, to, start: t, dur: Math.min(1.3, Math.max(0.35, dist / 3.4)), onDone };
+      agent.rotation.y = Math.atan2(to.x - from.x, to.z - from.z);
+    }
+
+    // Interlocuteur (dialogues d'infiltration) : face caméra, côté gauche
+    if (sceneDef.focusNpc) {
+      // À gauche de la carte de dialogue (centrée), tourné vers la caméra
+      const speaker = Codex.characters.create({ seed: 21 });
+      speaker.position.set(-3.3, 0, 2.0);
+      speaker.rotation.y = 0.35;
+      speaker.scale.setScalar(1.18);
+      world.add(speaker);
+      // Douche de lumière chaude : l'interlocuteur reste lisible de nuit
+      const keyLight = new window.THREE.PointLight(0xffd9a8, 1.35, 8);
+      keyLight.position.set(-3.3, 3.0, 3.4);
+      world.add(keyLight);
+    }
 
     // ----- Adoption des hotspots DOM : % → ancre 3D → projection -----
     const anchors = [];
@@ -431,6 +470,26 @@ window.Codex = window.Codex || {};
       anchors[anchors.length - 1].ring = ring;
     }
     container.querySelectorAll(".hotspot").forEach(adopt);
+
+    // Clic sur un hotspot : l'agent marche jusqu'au point avant d'intercepter
+    function onHotspotCapture(e) {
+      if (window.__CODEX_TEST__ || reducedPre) return;
+      const hs = e.target.closest && e.target.closest(".hotspot");
+      if (!hs) return;
+      const a = anchors.find((x) => x.el === hs);
+      if (!a || a.reached) return;
+      e.stopPropagation();
+      e.preventDefault();
+      const stand = a.v.clone();
+      const dir = agent.position.clone().sub(stand).setY(0).normalize();
+      stand.add(dir.multiplyScalar(0.85));
+      walkAgentTo(stand, () => {
+        a.reached = true;
+        agent.rotation.y = Math.atan2(a.v.x - agent.position.x, a.v.z - agent.position.z);
+        hs.click();
+      });
+    }
+    container.addEventListener("click", onHotspotCapture, true);
     const mo = new MutationObserver((muts) => {
       for (const m of muts) {
         for (const n of m.addedNodes) {
@@ -461,19 +520,41 @@ window.Codex = window.Codex || {};
       raf = requestAnimationFrame(animate);
       t += 0.016;
 
-      // Caméra : dolly d'entrée + dérive + parallaxe
-      const dolly = Math.max(0, 1.6 - t * 1.4);
-      const sway = reduced ? 0 : Math.sin(t * 0.32) * 0.35;
-      camera.position.set(
-        camBase.x + sway + mx * 0.55,
-        camBase.y + (reduced ? 0 : Math.sin(t * 0.21) * 0.12) - my * 0.3,
-        camBase.z + dolly
-      );
-      camera.lookAt(mx * 0.8, 1.3 - my * 0.3, -2);
+      // Caméra : intro orbitale cinématique, puis dérive + parallaxe
+      if (t < INTRO) {
+        const k = 1 - Math.pow(1 - t / INTRO, 3); // ease-out cubic
+        const ang = (1 - k) * 0.62;
+        const radius = camBase.z + (1 - k) * 3.2;
+        camera.position.set(
+          Math.sin(ang) * radius,
+          camBase.y + (1 - k) * 1.6,
+          Math.cos(ang) * radius
+        );
+        camera.lookAt(0, 1.3, -2);
+      } else {
+        const sway = reduced ? 0 : Math.sin(t * 0.32) * 0.35;
+        camera.position.set(
+          camBase.x + sway + mx * 0.55,
+          camBase.y + (reduced ? 0 : Math.sin(t * 0.21) * 0.12) - my * 0.3,
+          camBase.z
+        );
+        camera.lookAt(mx * 0.8, 1.3 - my * 0.3, -2);
+      }
 
-      // PNJ : oscillation d'attente ; anneaux : pulsation
+      // Marche de l'agent
+      if (agentWalk) {
+        const k = Math.min(1, (t - agentWalk.start) / agentWalk.dur);
+        agent.position.lerpVectors(agentWalk.from, agentWalk.to, k);
+        if (k >= 1) {
+          const done = agentWalk.onDone;
+          agentWalk = null;
+          if (done) done();
+        }
+      }
+
+      // Personnages animés (idle / marche) ; anneaux : pulsation
       world.traverse((o) => {
-        if (o.userData.bobPhase !== undefined) o.position.y = Math.sin(t * 1.7 + o.userData.bobPhase) * 0.035;
+        if (o.userData.charAnim) Codex.characters.animate(o, t, o === agent && Boolean(agentWalk));
         if (o.userData.pulse !== undefined) {
           const s = 1 + Math.sin(t * 2.4 + o.userData.pulse) * 0.12;
           o.scale.setScalar(s);
@@ -504,6 +585,8 @@ window.Codex = window.Codex || {};
       cancelAnimationFrame(raf);
       mo.disconnect();
       container.removeEventListener("pointermove", onMove);
+      container.removeEventListener("click", onHotspotCapture, true);
+      if (bars) { bars.remove(); bars = null; }
       scene.traverse((o) => {
         if (o.geometry) o.geometry.dispose();
         if (o.material) {

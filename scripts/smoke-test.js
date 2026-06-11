@@ -37,6 +37,9 @@ app.whenReady().then(async () => {
 
   const out = await win.webContents.executeJavaScript(`
     (async () => {
+      // Mode test : désactive l'intro orbitale et la marche-avant-clic de
+      // scene3d (Phase 7) pour garder les timings clic → popup déterministes.
+      window.__CODEX_TEST__ = true;
       const out = [];
       const wait = (ms) => new Promise(r => setTimeout(r, ms));
 
@@ -65,6 +68,12 @@ app.whenReady().then(async () => {
       const mapSvg = document.querySelector('.hq-map');
       out.push(mapCanvas ? 'MAP:ok(globe3D)' : mapSvg ? 'MAP:ok(svg-fallback)' : 'MAP:FAIL');
       out.push(document.querySelector('.lottie-radar svg') ? 'LOTTIE:ok' : 'LOTTIE:FAIL');
+      // Phase 7 : données monde (vrais continents) + panneau pays + avatars
+      out.push(window.topojson && Codex.WORLD_TOPO && Codex.WORLD_TOPO.objects ? 'WORLD:ok' : 'WORLD:FAIL');
+      out.push(mapCanvas
+        ? (document.querySelector('.hq-map-wrap .globe-panel') ? 'GPANEL:ok(3d)' : 'GPANEL:FAIL')
+        : 'GPANEL:ok(svg-fallback)');
+      out.push(Codex.characters && typeof Codex.characters.create === 'function' ? 'CHARS:ok' : 'CHARS:FAIL');
 
       // ---------- Phase 3 : console ECHO (chatbot) ----------
       Codex.router.go('echo-console'); await wait(500);

@@ -1,7 +1,10 @@
 /**
- * THE CODEX — Globe 3D du QG (three.js, vendoré).
- * Sphère graticule + étoiles + marqueurs de pays cliquables, rotation
- * automatique et au glisser. Auto-nettoyage quand le canvas quitte le DOM.
+ * THE CODEX — Globe 3D du QG, v2 « stratégie » (three.js, vendoré).
+ * Vrais continents : frontières Natural Earth 110m (Codex.WORLD_TOPO,
+ * domaine public) décodées par topojson-client et peintes en texture
+ * équirectangulaire au montage — terres lumineuses sur océan profond,
+ * frontières de pays, atmosphère, étoiles, marqueurs cliquables.
+ * Le QG affiche un panneau d'infos pays façon jeu de stratégie (onHover).
  * Si WebGL est indisponible, mount() retourne null → repli carte SVG.
  */
 "use strict";
@@ -25,32 +28,85 @@ window.Codex = window.Codex || {};
     );
   }
 
-  /** Graticule : parallèles + méridiens en lignes fines. */
-  function buildGraticule(THREE, r) {
-    const group = new THREE.Group();
-    const mat = new THREE.LineBasicMaterial({ color: 0x00d4ff, transparent: true, opacity: 0.10 });
-    const SEG = 64;
+  /**
+   * Peint la Terre en équirectangulaire : océan profond, masses terrestres
+   * au dégradé froid « renseignement », côtes lumineuses, frontières fines.
+   */
+  function buildEarthTexture(THREE) {
+    const W = 2048, H = 1024;
+    const cv = document.createElement("canvas");
+    cv.width = W; cv.height = H;
+    const ctx = cv.getContext("2d");
 
+    // Océan : dégradé profond
+    const oc = ctx.createLinearGradient(0, 0, 0, H);
+    oc.addColorStop(0, "#050b18");
+    oc.addColorStop(0.5, "#081226");
+    oc.addColorStop(1, "#050b18");
+    ctx.fillStyle = oc;
+    ctx.fillRect(0, 0, W, H);
+
+    if (!window.topojson || !Codex.WORLD_TOPO) return new THREE.CanvasTexture(cv);
+
+    const topo = Codex.WORLD_TOPO;
+    const countries = window.topojson.feature(topo, topo.objects.countries);
+    const borders = window.topojson.mesh(topo, topo.objects.countries, (a, b) => a !== b);
+
+    const px = (lon) => ((lon + 180) / 360) * W;
+    const py = (lat) => ((90 - lat) / 180) * H;
+
+    function tracePolygon(ring) {
+      ctx.moveTo(px(ring[0][0]), py(ring[0][1]));
+      for (let i = 1; i < ring.length; i++) ctx.lineTo(px(ring[i][0]), py(ring[i][1]));
+      ctx.closePath();
+    }
+    function traceGeom(geom) {
+      const polys = geom.type === "Polygon" ? [geom.coordinates] : geom.coordinates;
+      for (const poly of polys) for (const ring of poly) tracePolygon(ring);
+    }
+
+    // Terres : remplissage + lueur de côte
+    ctx.beginPath();
+    for (const f of countries.features) traceGeom(f.geometry);
+    const land = ctx.createLinearGradient(0, 0, 0, H);
+    land.addColorStop(0, "#16314f");
+    land.addColorStop(0.5, "#1d4060");
+    land.addColorStop(1, "#16314f");
+    ctx.fillStyle = land;
+    ctx.fill("evenodd");
+    ctx.shadowColor = "rgba(0, 212, 255, 0.55)";
+    ctx.shadowBlur = 6;
+    ctx.strokeStyle = "rgba(90, 200, 240, 0.85)";
+    ctx.lineWidth = 1.6;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // Frontières intérieures, fines et discrètes
+    ctx.beginPath();
+    const bGeoms = borders.type === "MultiLineString" ? borders.coordinates : [borders.coordinates];
+    for (const line of bGeoms) {
+      ctx.moveTo(px(line[0][0]), py(line[0][1]));
+      for (let i = 1; i < line.length; i++) ctx.lineTo(px(line[i][0]), py(line[i][1]));
+    }
+    ctx.strokeStyle = "rgba(120, 170, 210, 0.28)";
+    ctx.lineWidth = 0.7;
+    ctx.stroke();
+
+    // Graticule léger directement dans la texture
+    ctx.strokeStyle = "rgba(0, 212, 255, 0.07)";
+    ctx.lineWidth = 1;
+    for (let lon = -150; lon <= 180; lon += 30) {
+      ctx.beginPath(); ctx.moveTo(px(lon), 0); ctx.lineTo(px(lon), H); ctx.stroke();
+    }
     for (let lat = -60; lat <= 60; lat += 30) {
-      const pts = [];
-      for (let i = 0; i <= SEG; i++) {
-        const lon = (i / SEG) * 360 - 180;
-        pts.push(latLonToVec3(lat, lon, r));
-      }
-      group.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), mat));
+      ctx.beginPath(); ctx.moveTo(0, py(lat)); ctx.lineTo(W, py(lat)); ctx.stroke();
     }
-    for (let lon = -180; lon < 180; lon += 30) {
-      const pts = [];
-      for (let i = 0; i <= SEG; i++) {
-        const lat = (i / SEG) * 180 - 90;
-        pts.push(latLonToVec3(lat, lon, r));
-      }
-      group.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), mat));
-    }
-    return group;
+
+    const tex = new THREE.CanvasTexture(cv);
+    tex.anisotropy = 4;
+    return tex;
   }
 
-  /** Texture radiale douce (halo des marqueurs) générée au runtime. */
   function glowTexture(THREE, color) {
     const c = document.createElement("canvas");
     c.width = c.height = 64;
@@ -65,9 +121,7 @@ window.Codex = window.Codex || {};
 
   /**
    * Monte le globe.
-   * @param container élément hôte (position:relative)
-   * @param opts { countries: [{...,lat,lon, status, color}], onSelect(c), onHover(c|null, x, y) }
-   * @returns contrôleur { dispose } ou null si WebGL indisponible
+   * @param opts { countries: [{..., lat, lon, status, color, haloCss}], onSelect(c), onHover(c|null, x, y) }
    */
   function mount(container, opts) {
     if (!window.THREE || !webglAvailable()) return null;
@@ -86,33 +140,46 @@ window.Codex = window.Codex || {};
     container.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(42, W() / H(), 0.1, 100);
-    camera.position.set(0, 0.55, 3.1);
+    const camera = new THREE.PerspectiveCamera(40, W() / H(), 0.1, 100);
+    camera.position.set(0, 0.5, 3.05);
     camera.lookAt(0, 0, 0);
 
     const globe = new THREE.Group();
     scene.add(globe);
 
-    // Sphère de fond légèrement teintée
-    globe.add(new THREE.Mesh(
-      new THREE.SphereGeometry(0.985, 48, 32),
-      new THREE.MeshBasicMaterial({ color: 0x0a1426, transparent: true, opacity: 0.92 })
-    ));
-    globe.add(buildGraticule(THREE, 1));
+    // Terre : texture Natural Earth peinte au montage
+    const earthTex = buildEarthTexture(THREE);
+    const earth = new THREE.Mesh(
+      new THREE.SphereGeometry(1, 64, 48),
+      new THREE.MeshStandardMaterial({ map: earthTex, roughness: 0.85, metalness: 0.05 })
+    );
+    globe.add(earth);
 
-    // Halo atmosphérique
-    const atmosphere = new THREE.Sprite(new THREE.SpriteMaterial({
-      map: glowTexture(THREE, "rgba(0,212,255,0.55)"),
-      transparent: true, opacity: 0.5, depthWrite: false,
+    // Éclairage : soleil froid + lumière d'appoint cyan
+    scene.add(new THREE.AmbientLight(0x8aa4c8, 0.55));
+    const sun = new THREE.DirectionalLight(0xeaf4ff, 1.25);
+    sun.position.set(4, 2.2, 3.5);
+    scene.add(sun);
+    const fill = new THREE.DirectionalLight(0x00d4ff, 0.22);
+    fill.position.set(-5, -1, -2);
+    scene.add(fill);
+
+    // Atmosphère : coque rim + halo sprite
+    const atmo = new THREE.Mesh(
+      new THREE.SphereGeometry(1.035, 48, 36),
+      new THREE.MeshBasicMaterial({ color: 0x2a9fd4, transparent: true, opacity: 0.10, side: THREE.BackSide, blending: THREE.AdditiveBlending })
+    );
+    scene.add(atmo);
+    const halo = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: glowTexture(THREE, "rgba(0,180,240,0.5)"), transparent: true, opacity: 0.55, depthWrite: false,
     }));
-    atmosphere.scale.set(2.9, 2.9, 1);
-    scene.add(atmosphere);
+    halo.scale.set(3.05, 3.05, 1);
+    scene.add(halo);
 
     // Étoiles
     const starPts = [];
-    for (let i = 0; i < 450; i++) {
-      const v = new THREE.Vector3().randomDirection().multiplyScalar(7 + Math.random() * 8);
-      starPts.push(v);
+    for (let i = 0; i < 500; i++) {
+      starPts.push(new THREE.Vector3().randomDirection().multiplyScalar(8 + Math.random() * 9));
     }
     scene.add(new THREE.Points(
       new THREE.BufferGeometry().setFromPoints(starPts),
@@ -125,7 +192,7 @@ window.Codex = window.Codex || {};
     for (const c of opts.countries) {
       const pos = latLonToVec3(c.lat, c.lon, 1.012);
       const dot = new THREE.Mesh(
-        new THREE.SphereGeometry(c.status === "locked" ? 0.018 : 0.026, 12, 12),
+        new THREE.SphereGeometry(c.status === "locked" ? 0.016 : 0.024, 12, 12),
         new THREE.MeshBasicMaterial({ color: c.color })
       );
       dot.position.copy(pos);
@@ -133,25 +200,35 @@ window.Codex = window.Codex || {};
       globe.add(dot);
       markers.push(dot);
 
-      const halo = new THREE.Sprite(new THREE.SpriteMaterial({
+      const mhalo = new THREE.Sprite(new THREE.SpriteMaterial({
         map: glowTexture(THREE, c.haloCss), transparent: true, depthWrite: false,
-        opacity: c.status === "locked" ? 0.25 : 0.8,
+        opacity: c.status === "locked" ? 0.25 : 0.85,
       }));
-      halo.scale.setScalar(c.status === "locked" ? 0.1 : 0.2);
-      halo.position.copy(pos.clone().multiplyScalar(1.004));
-      globe.add(halo);
+      mhalo.scale.setScalar(c.status === "locked" ? 0.09 : 0.18);
+      mhalo.position.copy(pos.clone().multiplyScalar(1.004));
+      globe.add(mhalo);
 
       if (c.status === "active" || c.status === "playable") {
-        pulses.push({ sprite: halo, base: 0.2, phase: Math.random() * Math.PI * 2 });
+        pulses.push({ sprite: mhalo, base: 0.18, phase: Math.random() * Math.PI * 2 });
+        // Anneau au sol du marqueur actif
+        if (c.status === "active") {
+          const ring = new THREE.Mesh(
+            new THREE.RingGeometry(0.03, 0.042, 24),
+            new THREE.MeshBasicMaterial({ color: c.color, transparent: true, opacity: 0.8, side: THREE.DoubleSide })
+          );
+          ring.position.copy(pos.clone().multiplyScalar(1.002));
+          ring.lookAt(pos.clone().multiplyScalar(2));
+          globe.add(ring);
+          pulses.push({ sprite: ring, base: 1, phase: 0, isRing: true });
+        }
       }
     }
 
-    // Europe face caméra au démarrage
+    // Europe face caméra
     globe.rotation.y = -2.1;
 
     // ----- Interactions -----
     const ray = new THREE.Raycaster();
-    ray.params.Points = { threshold: 0.05 };
     const pointer = new THREE.Vector2();
     let dragging = false;
     let moved = 0;
@@ -193,7 +270,7 @@ window.Codex = window.Codex || {};
       }
     });
     renderer.domElement.addEventListener("click", (e) => {
-      if (moved > 6) return; // c'était un drag
+      if (moved > 6) return;
       const c = pick(e);
       if (c && opts.onSelect) opts.onSelect(c);
     });
@@ -201,15 +278,21 @@ window.Codex = window.Codex || {};
     // ----- Boucle de rendu (auto-nettoyage hors DOM) -----
     let raf = 0;
     let t = 0;
-    let everConnected = false; // le conteneur peut être attaché après mount()
+    let everConnected = false;
     function animate() {
       if (renderer.domElement.isConnected) everConnected = true;
       else if (everConnected) return dispose();
       raf = requestAnimationFrame(animate);
       t += 0.016;
-      if (autoRotate && !dragging) globe.rotation.y += 0.0011;
+      if (autoRotate && !dragging) globe.rotation.y += 0.0009;
       for (const p of pulses) {
-        p.sprite.scale.setScalar(p.base * (1 + 0.45 * Math.abs(Math.sin(t * 1.8 + p.phase))));
+        if (p.isRing) {
+          const s = 1 + Math.sin(t * 2.2) * 0.35;
+          p.sprite.scale.setScalar(s);
+          p.sprite.material.opacity = 0.55 + Math.sin(t * 2.2) * 0.25;
+        } else {
+          p.sprite.scale.setScalar(p.base * (1 + 0.45 * Math.abs(Math.sin(t * 1.8 + p.phase))));
+        }
       }
       if (container.clientWidth && (renderer.domElement.width !== container.clientWidth * renderer.getPixelRatio())) {
         renderer.setSize(W(), H());

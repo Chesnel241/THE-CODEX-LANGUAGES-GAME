@@ -27,6 +27,7 @@ const LIBS = [
   { pkg: "animejs", src: "lib/anime.min.js", out: "anime.min.js", global: "anime", license: "MIT" },
   { pkg: "fuse.js", src: "dist/fuse.min.js", out: "fuse.min.js", global: "Fuse", license: "Apache-2.0" },
   { pkg: "compromise", src: "builds/compromise.js", out: "compromise.js", global: "nlp", license: "MIT" },
+  { pkg: "topojson-client", src: "dist/topojson-client.min.js", out: "topojson-client.min.js", global: "topojson", license: "ISC" },
 ];
 
 // Polices embarquées (woff2, licence OFL) → vendor/fonts/
@@ -152,6 +153,26 @@ if (verifyOnly) {
       license: "ISC", global: "Codex.ICONS", sha256: sha256(iconsBuf), bytes: iconsBuf.length,
     });
     console.log(`  ✓ vendor/icons-data.js ← lucide-static (${ICON_NAMES.length} icônes, ISC)`);
+  }
+
+  // ----- Données monde (Natural Earth via world-atlas, domaine public) -----
+  {
+    const topoSrc = path.join(ROOT, "node_modules", "world-atlas", "countries-110m.json");
+    if (!fs.existsSync(topoSrc)) {
+      console.error("  ✗ world-atlas/countries-110m.json introuvable");
+      failures += 1;
+    } else {
+      const topo = fs.readFileSync(topoSrc, "utf8");
+      const js = "/**\n * THE CODEX — Frontières mondiales Natural Earth 110m (domaine public),\n * via world-atlas (ISC). Généré par scripts/vendor.js — NE PAS ÉDITER.\n */\n\"use strict\";\nwindow.Codex = window.Codex || {};\nCodex.WORLD_TOPO = " + topo + ";\n";
+      const buf = Buffer.from(js, "utf8");
+      fs.writeFileSync(path.join(VENDOR_DIR, "world-data.js"), buf);
+      files.push({
+        file: "world-data.js", pkg: "world-atlas", version: pkgVersion("world-atlas"),
+        license: "ISC / Natural Earth (domaine public)", global: "Codex.WORLD_TOPO",
+        sha256: sha256(buf), bytes: buf.length,
+      });
+      console.log(`  ✓ vendor/world-data.js ← world-atlas countries-110m (${(buf.length / 1024).toFixed(0)} Ko)`);
+    }
   }
 
   if (failures) process.exit(1);

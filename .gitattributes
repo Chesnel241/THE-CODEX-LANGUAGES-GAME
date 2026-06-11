@@ -1,0 +1,14 @@
+# THE CODEX — normalisation des fins de ligne.
+# Tout le texte est stocké et extrait en LF sur toutes les plateformes :
+# indispensable pour la vérification d'intégrité SHA-256 des vendors
+# (git pour Windows convertirait sinon LF→CRLF au checkout).
+
+* text=auto eol=lf
+
+# Fichiers vendorés : empreintes figées dans vendor-manifest.json —
+# traités comme binaires, jamais convertis.
+src/renderer/vendor/** -text
+
+# Binaires
+*.png binary
+*.ico binary

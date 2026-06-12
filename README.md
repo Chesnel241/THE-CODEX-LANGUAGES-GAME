@@ -28,6 +28,10 @@ téléchargez le `.exe` depuis la page Releases, double-cliquez, jouez.
   **marche jusqu'aux points d'intérêt** que vous cliquez avant de les activer.
 - 🎬 **Intro cinématique** : plan orbital de 2 s avec letterbox (barres noires
   glissantes) à l'entrée de chaque scène — désactivée en animations réduites.
+- 🎞️ **Carton-titre façon film** pendant l'intro : ville et lieu de
+  l'opération s'affichent en surimpression puis s'effacent.
+- 🚶‍♀️ **PNJ déambulants** : des figurants marchent entre des points proches
+  de leur position — la vie continue autour de l'agent.
 - 🗣️ **Interlocuteur face caméra** dans les dialogues d'infiltration, éclairé
   en douche chaude, carte de dialogue déportée façon visual novel.
 

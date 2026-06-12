@@ -1,7 +1,7 @@
 {
   "name": "the-codex",
   "productName": "THE CODEX",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "THE CODEX — Jeu d'espionnage linguistique. La langue est ton arme.",
   "main": "src/main/main.js",
   "private": true,

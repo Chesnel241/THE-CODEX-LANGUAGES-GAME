@@ -139,7 +139,7 @@ window.Codex = window.Codex || {};
     rig.head = headG;
 
     g.userData.rig = rig;
-    g.userData.charAnim = { phase: Math.random() * Math.PI * 2, baseY: { armL: rig.armL.position.y, armR: rig.armR.position.y } };
+    g.userData.charAnim = { phase: Math.random() * Math.PI * 2, torsoY: torso.position.y };
     if (opts.scale) g.scale.setScalar(opts.scale);
     return g;
   }
@@ -155,7 +155,7 @@ window.Codex = window.Codex || {};
       rig.legR.rotation.x = -Math.sin(w) * 0.65;
       rig.armL.rotation.x = -Math.sin(w) * 0.5;
       rig.armR.rotation.x = Math.sin(w) * 0.5;
-      rig.torso.position.y += Math.abs(Math.sin(w)) * 0.0012;
+      rig.torso.position.y = a.torsoY + Math.abs(Math.sin(w)) * 0.03; // rebond du pas
       rig.head.rotation.y = 0;
     } else {
       const w = t * 1.6 + a.phase;
@@ -163,6 +163,7 @@ window.Codex = window.Codex || {};
       rig.legR.rotation.x *= 0.85;
       rig.armL.rotation.x *= 0.85;
       rig.armR.rotation.x *= 0.85;
+      rig.torso.position.y = a.torsoY;
       rig.torso.scale.y = 1 + Math.sin(w) * 0.012;          // respiration
       rig.head.rotation.y = Math.sin(t * 0.45 + a.phase) * 0.35; // regard qui balaie
       rig.head.rotation.x = Math.sin(t * 0.3 + a.phase * 2) * 0.06;

@@ -393,6 +393,7 @@ window.Codex = window.Codex || {};
     const reducedPre = Codex.state && Codex.state.data.settings.reducedMotion;
     const INTRO = (reducedPre || window.__CODEX_TEST__) ? 0 : 2.0;
     let bars = null;
+    let titleCard = null;
     if (INTRO > 0) {
       bars = document.createElement("div");
       bars.className = "cine-bars";
@@ -400,6 +401,23 @@ window.Codex = window.Codex || {};
       container.appendChild(bars);
       setTimeout(() => { if (bars) bars.classList.add("out"); }, INTRO * 1000 - 350);
       setTimeout(() => { if (bars) { bars.remove(); bars = null; } }, INTRO * 1000 + 400);
+
+      // Carton-titre façon film : ville + lieu de l'opération
+      let zoneName = "";
+      try { zoneName = Codex.arc().zone.name; } catch { /* hors arc actif */ }
+      titleCard = document.createElement("div");
+      titleCard.className = "scene-titlecard";
+      const label = document.createElement("div");
+      label.className = "stc-label";
+      label.textContent = zoneName.toUpperCase();
+      const name = document.createElement("div");
+      name.className = "stc-name";
+      name.textContent = sceneDef.name || "";
+      if (zoneName) titleCard.appendChild(label);
+      titleCard.appendChild(name);
+      container.appendChild(titleCard);
+      setTimeout(() => { if (titleCard) titleCard.classList.add("out"); }, INTRO * 1000 + 400);
+      setTimeout(() => { if (titleCard) { titleCard.remove(); titleCard = null; } }, INTRO * 1000 + 1100);
     }
 
     // Lumières globales
@@ -431,6 +449,21 @@ window.Codex = window.Codex || {};
       if (dist < 0.25) { if (onDone) onDone(); return; }
       agentWalk = { from, to, start: t, dur: Math.min(1.3, Math.max(0.35, dist / 3.4)), onDone };
       agent.rotation.y = Math.atan2(to.x - from.x, to.z - from.z);
+    }
+
+    // PNJ déambulants : jusqu'à deux figurants marchent entre des points
+    // proches de leur position d'origine (la vie continue autour de l'agent)
+    const wanderCandidates = [];
+    world.traverse((o) => {
+      if (o.userData.charAnim && o !== agent) wanderCandidates.push(o);
+    });
+    for (const o of wanderCandidates.filter((_, i) => i % 2 === 1).slice(0, 2)) {
+      o.userData.wander = {
+        base: o.position.clone(),
+        target: null,
+        nextAt: 2.5 + Math.random() * 4,
+        baseRy: o.rotation.y,
+      };
     }
 
     // Interlocuteur (dialogues d'infiltration) : face caméra, côté gauche
@@ -552,9 +585,35 @@ window.Codex = window.Codex || {};
         }
       }
 
-      // Personnages animés (idle / marche) ; anneaux : pulsation
+      // Personnages animés (idle / marche / déambulation) ; anneaux : pulsation
       world.traverse((o) => {
-        if (o.userData.charAnim) Codex.characters.animate(o, t, o === agent && Boolean(agentWalk));
+        if (o.userData.charAnim) {
+          let walking = o === agent && Boolean(agentWalk);
+          const wd = o.userData.wander;
+          if (wd && !reduced) {
+            if (!wd.target && t >= wd.nextAt) {
+              const ang = Math.random() * Math.PI * 2;
+              const r = 0.5 + Math.random() * 0.8;
+              wd.target = wd.base.clone();
+              wd.target.x += Math.sin(ang) * r;
+              wd.target.z += Math.cos(ang) * r;
+              o.rotation.y = Math.atan2(wd.target.x - o.position.x, wd.target.z - o.position.z);
+            }
+            if (wd.target) {
+              v.copy(wd.target).sub(o.position).setY(0);
+              const dist = v.length();
+              if (dist < 0.05) {
+                wd.target = null;
+                wd.nextAt = t + 2.5 + Math.random() * 5;
+                o.rotation.y = wd.baseRy;
+              } else {
+                o.position.add(v.normalize().multiplyScalar(Math.min(dist, 0.0095)));
+                walking = true;
+              }
+            }
+          }
+          Codex.characters.animate(o, t, walking);
+        }
         if (o.userData.pulse !== undefined) {
           const s = 1 + Math.sin(t * 2.4 + o.userData.pulse) * 0.12;
           o.scale.setScalar(s);
@@ -587,6 +646,7 @@ window.Codex = window.Codex || {};
       container.removeEventListener("pointermove", onMove);
       container.removeEventListener("click", onHotspotCapture, true);
       if (bars) { bars.remove(); bars = null; }
+      if (titleCard) { titleCard.remove(); titleCard = null; }
       scene.traverse((o) => {
         if (o.geometry) o.geometry.dispose();
         if (o.material) {

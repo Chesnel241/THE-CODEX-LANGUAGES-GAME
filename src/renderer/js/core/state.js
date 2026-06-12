@@ -25,6 +25,7 @@ window.Codex = window.Codex || {};
       progress: {}, // par langue : { xp, missions: { id: { bestScore, attempts, completedAt } } }
       vault: [], // { id, lang, kind, title, data, acquiredAt, timesReviewed, lastReviewed }
       medals: [], // { id, earnedAt }
+      tutorial: { hqDone: false, seen: {} }, // visite guidée QG + protocoles vus par type
       daily: { lastCompleted: null, count: 0 },
       stats: {
         missionsCompleted: 0,

@@ -42,6 +42,7 @@ Codex.engines = Codex.engines || {};
 
     const echo = echoBar(opts.echoIntro || Codex.t("echo.scan"), {
       hints,
+      protocol: "percee",
       onHint: () => {
         const next = content.fragments.find((f) => !f.collected);
         if (next) echo.say(Codex.t("echo.focusOn", { label: next.label }));
@@ -49,6 +50,7 @@ Codex.engines = Codex.engines || {};
       },
     });
     screenEl.appendChild(echo.node);
+    Codex.ui.maybeProtocol("percee");
 
     scanEffect(scene);
 

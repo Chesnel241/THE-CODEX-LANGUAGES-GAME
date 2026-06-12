@@ -89,17 +89,73 @@ window.Codex = window.Codex || {};
     return head;
   }
 
+  /** Nombre de règles affichées par protocole (clés proto.<type>.rN). */
+  const PROTO_RULES = { percee: 4, infiltration: 3, surveillance: 3, negociation: 3, extraction: 3 };
+
+  /** Modale « PROTOCOLE DE MISSION » : les règles du type de mission. */
+  function protocolModal(type) {
+    const card = el(`
+      <div class="proto-modal">
+        <div class="proto-head">
+          <span class="proto-ic cyan"></span>
+          <div>
+            <div class="label cyan">${esc(Codex.t("proto.label"))}</div>
+            <div class="h2">${esc(Codex.t(`proto.${type}.t`))}</div>
+          </div>
+        </div>
+        <div class="proto-obj">${esc(Codex.t(`proto.${type}.obj`))}</div>
+        <ol class="proto-rules"></ol>
+        <div class="proto-score small muted">${esc(Codex.t("proto.scoring"))}</div>
+        <button class="btn mt-2" style="width:100%">${esc(Codex.t("proto.ok"))}</button>
+      </div>`);
+    card.querySelector(".proto-ic").appendChild(typeIcon(type, { size: 30 }));
+    const list = card.querySelector(".proto-rules");
+    for (let i = 1; i <= (PROTO_RULES[type] || 3); i++) {
+      const li = document.createElement("li");
+      li.textContent = Codex.t(`proto.${type}.r${i}`);
+      list.appendChild(li);
+    }
+    const m = modal(card);
+    Codex.audio.sfx.paper();
+    card.querySelector(".btn").addEventListener("click", () => {
+      Codex.audio.sfx.click();
+      m.close();
+    });
+    return m;
+  }
+
+  /** Affiche le protocole à la première rencontre du type (hors mode test). */
+  function maybeProtocol(type) {
+    if (window.__CODEX_TEST__) return;
+    const st = Codex.state;
+    const tut = st.data.tutorial || (st.data.tutorial = { hqDone: false, seen: {} });
+    if (tut.seen[type]) return;
+    tut.seen[type] = true;
+    st.save();
+    protocolModal(type);
+  }
+
   /** Barre ECHO commune aux terrains. Retourne { node, say, hintsUsed }. */
-  function echoBar(initialText, { hints = Infinity, onHint = null } = {}) {
+  function echoBar(initialText, { hints = Infinity, onHint = null, protocol = null } = {}) {
     let hintsLeft = hints;
     const node = el(`
       <div class="echo-bar">
         <div class="echo-hex"></div>
         <div class="echo-text"></div>
+        ${protocol ? `<button class="proto-btn" title="${esc(Codex.t("proto.label"))}"></button>` : ""}
         ${onHint ? `<button class="echo-hint-btn">${esc(Codex.t("terrain.hint"))}${hints !== Infinity ? ` (${hints})` : ""}</button>` : ""}
       </div>`);
     const textEl = node.querySelector(".echo-text");
     typewrite(textEl, initialText);
+
+    const pbtn = node.querySelector(".proto-btn");
+    if (pbtn) {
+      pbtn.appendChild(icon("circle-help", { size: 16 }));
+      pbtn.addEventListener("click", () => {
+        Codex.audio.sfx.click();
+        protocolModal(protocol);
+      });
+    }
 
     const btn = node.querySelector(".echo-hint-btn");
     if (btn) {
@@ -214,5 +270,5 @@ window.Codex = window.Codex || {};
     if (scanlines) screenEl.appendChild(el(`<div class="fx-scanlines" aria-hidden="true"></div>`));
   }
 
-  Codex.ui = { el, esc, stars, icon, flag, typeIcon, typewrite, pageHeader, echoBar, fragDots, modal, toast, scanEffect, buildScene, fxLayers };
+  Codex.ui = { el, esc, stars, icon, flag, typeIcon, typewrite, pageHeader, echoBar, fragDots, modal, toast, scanEffect, buildScene, fxLayers, protocolModal, maybeProtocol };
 })();

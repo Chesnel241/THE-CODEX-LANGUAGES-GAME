@@ -86,6 +86,7 @@ Codex.engines = Codex.engines || {};
       runPhase(0);
     });
     screenEl.appendChild(intro);
+    Codex.ui.maybeProtocol("extraction");
   }
 
   Codex.engines.extraction = { mount };

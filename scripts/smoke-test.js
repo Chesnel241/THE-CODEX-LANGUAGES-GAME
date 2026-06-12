@@ -94,6 +94,12 @@ app.whenReady().then(async () => {
       out.push(document.querySelectorAll('.hotspot').length >= 4 ? 'TERRAIN-EN:ok' : 'TERRAIN-EN:FAIL');
       // Phase 6 : scène 3D (ou repli CSS) — toujours valide, le mode est rapporté
       out.push(document.querySelector('.terrain-scene canvas.scene3d-canvas') ? 'SCENE3D:ok(webgl)' : 'SCENE3D:ok(css-fallback)');
+      // Phase 8 : protocole de mission via le bouton « ? » de la barre ECHO
+      const pbtn = document.querySelector('.proto-btn');
+      if (pbtn) { pbtn.click(); await wait(250); }
+      const pmodal = document.querySelector('.proto-modal');
+      out.push(pmodal && /12|fragment/i.test(pmodal.textContent) ? 'PROTO:ok' : 'PROTO:FAIL');
+      if (pmodal) { pmodal.querySelector('.btn').click(); await wait(250); }
       for (let i = 0; i < 4; i++) {
         const hs = document.querySelector('.hotspot:not(.cultural):not(.collected)');
         if (!hs) { out.push('FRAG' + i + ':MISSING'); break; }
@@ -177,6 +183,13 @@ app.whenReady().then(async () => {
       out.push(document.querySelector('.profile-wrap') ? 'PROFILE:ok' : 'PROFILE:FAIL');
       Codex.router.go('settings'); await wait(300);
       out.push(document.querySelector('.settings-wrap') ? 'SETTINGS:ok' : 'SETTINGS:FAIL');
+
+      // ---------- Phase 8 : Manuel de l'Agent + visite guidée ----------
+      Codex.router.go('manual'); await wait(400);
+      out.push(document.querySelector('.manual-wrap') ? 'MANUAL:ok' : 'MANUAL:FAIL');
+      out.push(document.querySelectorAll('.manual-type').length === 5 ? 'MANUAL-TYPES:ok' : 'MANUAL-TYPES:FAIL');
+      out.push(document.querySelectorAll('.manual-medal').length === 6 ? 'MANUAL-MEDALS:ok' : 'MANUAL-MEDALS:FAIL');
+      out.push(Codex.coach && typeof Codex.coach.startHq === 'function' && Codex.state.data.tutorial ? 'COACH:ok' : 'COACH:FAIL');
 
       // ---------- Phase 4 : Arène chronométrée ----------
       Codex.router.go('arena'); await wait(400);

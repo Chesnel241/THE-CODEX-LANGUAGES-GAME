@@ -206,11 +206,12 @@ window.Codex = window.Codex || {};
           <button class="icon-btn" data-go="echo-console" title="${esc(Codex.t("hq.echoTip"))}"></button>
           <button class="icon-btn" data-go="arena" title="${esc(Codex.t("hq.arenaTip"))}"></button>
           <button class="icon-btn" data-go="vault" title="${esc(Codex.t("hq.vaultTip"))}"></button>
+          <button class="icon-btn" data-go="manual" title="${esc(Codex.t("hq.manualTip"))}"></button>
           <button class="icon-btn" data-go="profile" title="${esc(Codex.t("hq.profileTip"))}"></button>
           <button class="icon-btn" data-go="settings" title="${esc(Codex.t("hq.settingsTip"))}"></button>
         </div>
       </div>`);
-    const NAV_ICONS = { daily: "radio", "echo-console": "satellite", arena: "zap", vault: "archive", profile: "id-card", settings: "settings" };
+    const NAV_ICONS = { daily: "radio", "echo-console": "satellite", arena: "zap", vault: "archive", manual: "book-open", profile: "id-card", settings: "settings" };
     topbar.querySelectorAll(".icon-btn").forEach((btn) => btn.appendChild(Codex.ui.icon(NAV_ICONS[btn.dataset.go] || "target")));
     const langLabel = topbar.querySelector(".lang-label");
     langLabel.insertBefore(Codex.ui.flag(arc.id), langLabel.firstChild);
@@ -330,5 +331,11 @@ window.Codex = window.Codex || {};
     main.appendChild(side);
     screenEl.appendChild(main);
     Codex.fx.stagger([...side.children]);
+
+    // Première visite : ECHO fait faire le tour du QG (rejouable via le Manuel)
+    const tut = st.data.tutorial || {};
+    if (Codex.coach && !tut.hqDone && !window.__CODEX_TEST__) {
+      setTimeout(() => Codex.coach.startHq(), 900);
+    }
   });
 })();

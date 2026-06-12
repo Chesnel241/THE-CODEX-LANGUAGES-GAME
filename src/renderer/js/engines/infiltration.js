@@ -68,11 +68,13 @@ Codex.engines = Codex.engines || {};
     let currentInteraction = null;
     const echo = echoBar(opts.echoIntro || Codex.t("echo.infilIntro"), {
       hints,
+      protocol: "infiltration",
       onHint: () => {
         if (currentInteraction) echo.say(currentInteraction.echoHint);
       },
     });
     screenEl.appendChild(echo.node);
+    Codex.ui.maybeProtocol("infiltration");
 
     scanEffect(scene);
 

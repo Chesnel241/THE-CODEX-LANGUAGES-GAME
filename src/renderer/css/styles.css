@@ -1547,3 +1547,113 @@ body.reduced-motion *, body.reduced-motion *::before, body.reduced-motion *::aft
 .scene-titlecard.out { animation: stcOut 540ms ease forwards; }
 @keyframes stcIn { to { opacity: 1; transform: none; } }
 @keyframes stcOut { from { opacity: 1; transform: none; } to { opacity: 0; transform: none; } }
+
+/* ============================================================
+   PHASE 8 — Règles du jeu : protocoles, Manuel de l'Agent, visite guidée
+   ============================================================ */
+/* Modale « PROTOCOLE DE MISSION » */
+.proto-modal {
+  width: 520px;
+  max-width: calc(100vw - 48px);
+  max-height: calc(100vh - 64px);
+  overflow: auto;
+  padding: 22px 24px;
+  background: linear-gradient(165deg, rgba(13, 24, 44, 0.97), rgba(8, 15, 30, 0.97));
+  border: 1px solid rgba(0, 212, 255, 0.35);
+  border-radius: 10px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.6), 0 0 30px rgba(0, 212, 255, 0.08);
+}
+.proto-head { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+.proto-head .proto-ic { display: flex; }
+.proto-obj { font-weight: 700; margin-bottom: 10px; }
+.proto-rules { margin: 0 0 12px 18px; padding: 0; }
+.proto-rules li { font-size: 13.5px; color: var(--text-secondary); margin-bottom: 7px; line-height: 1.45; }
+.proto-score {
+  padding: 9px 11px;
+  border-left: 3px solid var(--accent-amber);
+  background: rgba(255, 179, 71, 0.06);
+  border-radius: 0 6px 6px 0;
+  line-height: 1.5;
+}
+/* Bouton « ? » de la barre ECHO */
+.proto-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 180ms ease;
+}
+.proto-btn:hover { color: var(--accent-cyan); border-color: var(--accent-cyan); }
+
+/* Manuel de l'Agent */
+.manual-wrap { max-width: 860px; margin: 0 auto; padding-bottom: 40px; }
+.manual-section { margin-bottom: 14px; }
+.manual-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.manual-p { color: var(--text-secondary); line-height: 1.6; margin: 0 0 8px; }
+.manual-types { display: grid; gap: 8px; }
+.manual-type {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: rgba(0, 212, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.manual-type > div { flex: 1; }
+.manual-type-name { letter-spacing: 1.5px; }
+.manual-proto-btn { padding: 4px 12px; flex: none; }
+.manual-levels { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.manual-level {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(155, 126, 255, 0.05);
+}
+.manual-medals { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 8px; }
+.manual-medal {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 9px 11px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.manual-medal-ic { font-size: 20px; }
+.manual-replay { width: 100%; margin-top: 4px; }
+.title-help { margin-top: 12px; z-index: 1; display: inline-flex; align-items: center; gap: 8px; }
+
+/* Visite guidée du QG (coach ECHO) */
+.coach-overlay { position: absolute; inset: 0; z-index: 60; }
+.coach-ring {
+  position: fixed;
+  border: 2px solid var(--accent-cyan);
+  border-radius: 12px;
+  box-shadow: 0 0 0 9999px rgba(3, 8, 18, 0.74), 0 0 26px rgba(0, 212, 255, 0.45);
+  transition: all 320ms cubic-bezier(0.3, 0.8, 0.3, 1);
+  pointer-events: none;
+}
+.coach-card {
+  position: fixed;
+  width: 360px;
+  max-width: calc(100vw - 24px);
+  padding: 16px 18px;
+  background: linear-gradient(165deg, rgba(13, 24, 44, 0.98), rgba(8, 15, 30, 0.98));
+  border: 1px solid rgba(0, 212, 255, 0.4);
+  border-radius: 10px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.6);
+  transition: all 320ms cubic-bezier(0.3, 0.8, 0.3, 1);
+  z-index: 61;
+}
+.coach-text { color: var(--text-secondary); line-height: 1.55; margin: 8px 0 12px; }
+.coach-actions { display: flex; gap: 8px; justify-content: flex-end; }

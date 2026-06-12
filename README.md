@@ -13,6 +13,22 @@ Application desktop **Electron**, 100 % hors-ligne, zéro dépendance runtime.
 **🎮 Pour jouer : voir [GUIDE-INSTALLATION.md](GUIDE-INSTALLATION.md)** —
 téléchargez le `.exe` depuis la page Releases, double-cliquez, jouez.
 
+## Nouveautés Phase 8 — RÈGLES DU JEU : MANUEL, PROTOCOLES & VISITE GUIDÉE
+
+- 📖 **Manuel de l'Agent** : référence complète en jeu (concept, les 5 types
+  de mission, score/XP/niveaux, médailles, Coffre-Fort, Arène, Console ECHO,
+  globe des langues) — accessible depuis l'écran titre (avant même de
+  s'enrôler), le QG et la fin de la visite guidée. Bilingue FR/EN.
+- 📜 **Protocoles de mission** : à la première rencontre de chaque type de
+  mission, une fiche de règles s'affiche (objectif, déroulé numéroté, barème
+  exact). Re-consultable à tout moment via le bouton « ? » de la barre ECHO
+  sur le terrain, ou depuis le Manuel.
+- 🧭 **Visite guidée du QG** : à la première arrivée au QG, ECHO fait le tour
+  des modules avec un projecteur lumineux (globe, transmission, mission en
+  vedette, progression, modules) — passable, rejouable depuis le Manuel.
+- 💾 Sauvegarde : champ `tutorial` (visite faite + protocoles vus) — les
+  sauvegardes existantes migrent automatiquement.
+
 ## Nouveautés Phase 7 — GLOBE RÉEL, AVATARS & CINÉMATIQUE
 
 - 🌍 **Vrai globe stratégique** : les continents et frontières **Natural

@@ -47,6 +47,7 @@ const ICON_NAMES = [
   "chevron-left", "volume-2", "send", "check", "sparkles",
   "shield", "trophy", "timer", "globe", "map-pin", "award",
   "play", "x", "lightbulb", "message-square",
+  "circle-help", "book-open",
 ];
 
 function buildIconsData() {

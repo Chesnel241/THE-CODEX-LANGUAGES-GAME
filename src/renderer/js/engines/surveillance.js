@@ -116,9 +116,11 @@ Codex.engines = Codex.engines || {};
 
     const echo = echoBar(opts.echoIntro || Codex.t("echo.survIntro"), {
       hints,
+      protocol: "surveillance",
       onHint: () => { if (currentQuestion) echo.say(currentQuestion.echoHint); },
     });
     screenEl.appendChild(echo.node);
+    Codex.ui.maybeProtocol("surveillance");
 
     Codex.audio.sfx.paper();
 

@@ -54,9 +54,11 @@ Codex.engines = Codex.engines || {};
     let currentRound = null;
     const echo = echoBar(opts.echoIntro || Codex.t("echo.negoIntro"), {
       hints,
+      protocol: "negociation",
       onHint: () => { if (currentRound) echo.say(currentRound.echoHint); },
     });
     screenEl.appendChild(echo.node);
+    Codex.ui.maybeProtocol("negociation");
 
     function setCoop(v) {
       cooperation = Math.max(0, Math.min(100, v));

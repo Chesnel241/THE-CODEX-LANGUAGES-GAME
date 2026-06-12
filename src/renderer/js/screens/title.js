@@ -61,6 +61,15 @@ window.Codex = window.Codex || {};
       else Codex.router.go("onboarding");
     });
 
+    // Manuel de l'Agent : les règles avant même de s'enrôler
+    const helpBtn = el(`<button class="btn btn-ghost title-help">${Codex.ui.esc(known ? Codex.t("title.howto") : "COMMENT JOUER · HOW TO PLAY")}</button>`);
+    helpBtn.insertBefore(Codex.ui.icon("book-open", { size: 15 }), helpBtn.firstChild);
+    helpBtn.addEventListener("click", () => {
+      Codex.audio.sfx.paper();
+      Codex.router.go("manual", { from: "title" });
+    });
+    screenEl.appendChild(helpBtn);
+
     const ver = el(`<div class="title-version">v—</div>`);
     screenEl.appendChild(ver);
     if (window.codexBridge) {

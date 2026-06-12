@@ -13,6 +13,26 @@ Application desktop **Electron**, 100 % hors-ligne, zéro dépendance runtime.
 **🎮 Pour jouer : voir [GUIDE-INSTALLATION.md](GUIDE-INSTALLATION.md)** —
 téléchargez le `.exe` depuis la page Releases, double-cliquez, jouez.
 
+## Nouveautés Phase 9 — VOIX DU JOUEUR, BIBLIOTHÈQUE & EXAMENS BLANCS
+
+- 🎙️ **Studio Vocal — le joueur parle enfin** : écoutez le modèle (TTS natif),
+  lisez la phrase à voix haute, le module vocal analyse votre **rythme de
+  lecture** (durée parlée, pics de syllabes) en Web Audio **100 % local** —
+  rien n'est enregistré ni transmis. Listening + Reading + **Speaking**.
+  Repli « écoute active » avec auto-évaluation si le micro est refusé.
+- 📚 **Bibliothèque des mots** : 384 mots de fréquence (96 par langue,
+  8 thèmes : voyage, table, affaires, ville, urgences, sentiments,
+  technologie, temps) avec glosses bilingues — consultables et écoutables,
+  injectés dans l'Arène, le Daily Signal et l'index du chatbot ECHO.
+- 🎓 **Examens Blancs type certification** (mission spéciale) : banques de
+  sujets originales par langue — **TOEIC blanc** (anglais, score /990),
+  **TCF blanc** (français), **DELE blanco** (espagnol), **Goethe blanko**
+  (allemand) avec estimation CECRL. Conditions réelles : chrono, écoute
+  limitée à 2, énoncés audio non affichés, corrections détaillées à la fin.
+  Nouvelle médaille **🎓 Certifié** (≥ 80 %).
+- 🔐 Permissions durcies : seul `media:audio` (micro) est autorisé, tout le
+  reste demeure refusé ; analyse vocale sans aucun enregistrement.
+
 ## Nouveautés Phase 8 — RÈGLES DU JEU : MANUEL, PROTOCOLES & VISITE GUIDÉE
 
 - 📖 **Manuel de l'Agent** : référence complète en jeu (concept, les 5 types

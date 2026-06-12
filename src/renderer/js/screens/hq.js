@@ -296,6 +296,42 @@ window.Codex = window.Codex || {};
         </div>`));
     }
 
+    // Studio Vocal — lecture / prononciation au micro
+    const studioCard = el(`
+      <div class="card card-hover hq-mini-card">
+        <span class="hq-mini-ic cyan"></span>
+        <div>
+          <div class="label cyan">${esc(Codex.t("hq.studio"))}</div>
+          <div class="small muted">${esc(Codex.t("hq.studioSub"))}</div>
+        </div>
+      </div>`);
+    studioCard.querySelector(".hq-mini-ic").appendChild(Codex.ui.icon("mic", { size: 22 }));
+    studioCard.addEventListener("click", () => {
+      Codex.audio.sfx.echo();
+      Codex.router.go("studio");
+    });
+    side.appendChild(studioCard);
+
+    // Examen Blanc — mission spéciale type certification
+    if (Codex.EXAMS && Codex.EXAMS[arc.id]) {
+      const examBest = (st.data.exams || {})[arc.id];
+      const examCard = el(`
+        <div class="card card-hover hq-mini-card">
+          <span class="hq-mini-ic amber"></span>
+          <div style="flex:1">
+            <div class="label amber">${esc(Codex.t("hq.exam"))}</div>
+            <div class="small muted">${esc(Codex.t("hq.examSub", { name: Codex.EXAMS[arc.id].name }))}</div>
+          </div>
+          ${examBest && examBest.best ? `<div class="data cyan">${examBest.best}%</div>` : ""}
+        </div>`);
+      examCard.querySelector(".hq-mini-ic").appendChild(Codex.ui.icon("graduation-cap", { size: 22 }));
+      examCard.addEventListener("click", () => {
+        Codex.audio.sfx.stamp();
+        Codex.router.go("exam");
+      });
+      side.appendChild(examCard);
+    }
+
     // Arène — Blitz d'Infiltration
     const arenaBest = st.data.arena.best[arc.id] || 0;
     const arenaCard = el(`

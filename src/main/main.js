@@ -5,7 +5,7 @@
  *  - Sandbox Chromium activé globalement
  *  - contextIsolation + nodeIntegration désactivé dans le renderer
  *  - Toute navigation et ouverture de fenêtre refusées
- *  - Toutes les demandes de permission refusées (caméra, micro, géoloc…)
+ *  - Permissions refusées sauf micro (Studio Vocal, analyse 100 % locale)
  *  - IPC minimal et validé (sauvegarde locale uniquement)
  *  - Écriture de sauvegarde atomique (tmp + rename)
  */
@@ -102,11 +102,18 @@ function registerIpc() {
 }
 
 function hardenSession() {
-  // Aucune permission web n'est nécessaire au jeu : tout est refusé.
-  session.defaultSession.setPermissionRequestHandler((_wc, _permission, callback) => {
-    callback(false);
+  // Seul le micro (Studio Vocal — analyse locale, jamais transmise) est
+  // autorisé ; toute autre permission web est refusée.
+  function micOnly(permission, details) {
+    if (permission !== "media") return false;
+    const d = details || {};
+    if (Array.isArray(d.mediaTypes)) return d.mediaTypes.length > 0 && d.mediaTypes.every((t) => t === "audio");
+    return d.mediaType === "audio"; // PermissionCheckHandler (forme singulière)
+  }
+  session.defaultSession.setPermissionRequestHandler((_wc, permission, callback, details) => {
+    callback(micOnly(permission, details));
   });
-  session.defaultSession.setPermissionCheckHandler(() => false);
+  session.defaultSession.setPermissionCheckHandler((_wc, permission, _origin, details) => micOnly(permission, details));
 }
 
 function createWindow() {

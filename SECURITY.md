@@ -13,6 +13,7 @@ appliquées et le modèle de menace retenu.
 | Chaîne d'approvisionnement | Dépendance compromise | Librairies **vendorées et épinglées** avec manifeste SHA-256 vérifié en CI (voir ci-dessous) ; devDependencies verrouillées par lockfile |
 | Distribution | Binaire altéré | Build reproductible en CI GitHub Actions ; signature de code possible (voir ci-dessous) |
 | Entrée libre (chatbot ECHO) | Injection via la saisie | Traitement texte pur (aucune éval), borne 300 caractères, affichage par `textContent` uniquement |
+| Microphone (Studio Vocal) | Fuite audio | Permission limitée à `media:audio` uniquement (toute autre refusée) ; analyse **100 % locale** (enveloppe d'énergie Web Audio), aucun enregistrement conservé ni transmis — `connect-src 'none'` le garantit ; piste coupée après chaque prise |
 
 ## Librairies vendorées (politique de chaîne d'approvisionnement)
 

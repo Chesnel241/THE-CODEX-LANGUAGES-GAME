@@ -104,13 +104,31 @@ window.Codex = window.Codex || {};
     }));
   }
 
+  /** QCM tirés de la Bibliothèque des mots (Codex.VOCAB) : gloss → mot. */
+  function vocabBankQuestions() {
+    const bank = Codex.VOCAB && Codex.VOCAB[Codex.arc().id];
+    if (!bank) return [];
+    const qs = [];
+    for (const theme of bank.themes) {
+      if (theme.words.length < 3) continue;
+      for (const word of shuffle(theme.words).slice(0, 4)) {
+        const others = shuffle(theme.words.filter((w) => w !== word)).slice(0, 2);
+        qs.push({
+          q: `« ${R(word.g)} »`,
+          options: mc(word.w, others[0].w, others[1].w),
+        });
+      }
+    }
+    return qs;
+  }
+
   Codex.quiz = {
     /**
      * Génère n questions uniques (les questions du Coffre-Fort sont
      * prioritaires : c'est la répétition espacée déguisée).
      */
     generate(n) {
-      const pool = [...shuffle(vaultQuestions()), ...shuffle([...kbVerbQuestions(), ...fallbackQuestions()])];
+      const pool = [...shuffle(vaultQuestions()), ...shuffle([...kbVerbQuestions(), ...vocabBankQuestions(), ...fallbackQuestions()])];
       const seen = new Set();
       const out = [];
       for (const q of pool) {

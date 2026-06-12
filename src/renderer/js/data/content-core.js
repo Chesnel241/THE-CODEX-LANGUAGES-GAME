@@ -24,6 +24,7 @@ Codex.CONTENT = {
     { id: "silence_radio", icon: "🔕" },
     { id: "eclair", icon: "⚡" },
     { id: "explorateur", icon: "🔭" },
+    { id: "certifie", icon: "🎓" },
   ],
 
   // GDD §3.2 — positions sur la carte stylisée (viewBox 1000×520).

@@ -26,6 +26,8 @@ window.Codex = window.Codex || {};
       vault: [], // { id, lang, kind, title, data, acquiredAt, timesReviewed, lastReviewed }
       medals: [], // { id, earnedAt }
       tutorial: { hqDone: false, seen: {} }, // visite guidée QG + protocoles vus par type
+      exams: {}, // par langue : { best (%), attempts }
+      studio: { sessions: 0, bestAvg: 0 }, // studio vocal
       daily: { lastCompleted: null, count: 0 },
       stats: {
         missionsCompleted: 0,

@@ -1657,3 +1657,104 @@ body.reduced-motion *, body.reduced-motion *::before, body.reduced-motion *::aft
 }
 .coach-text { color: var(--text-secondary); line-height: 1.55; margin: 8px 0 12px; }
 .coach-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+/* ============================================================
+   PHASE 9 — Studio Vocal, Examens Blancs, Bibliothèque des mots
+   ============================================================ */
+/* Cartes compactes du QG (Studio / Examen) */
+.hq-mini-card { display: flex; align-items: center; gap: 12px; }
+.hq-mini-ic { display: flex; flex: none; }
+
+/* Studio Vocal */
+.studio-wrap { max-width: 640px; margin: 0 auto; }
+.studio-card { text-align: center; }
+.studio-phrase {
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.35;
+  margin: 16px 0 4px;
+  color: var(--text-primary);
+}
+.studio-note { min-height: 18px; margin-bottom: 12px; }
+.studio-meter {
+  height: 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  margin: 0 auto 12px;
+  max-width: 320px;
+  background: rgba(0, 0, 0, 0.3);
+}
+.studio-meter i {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));
+  transition: width 60ms linear;
+}
+.studio-meter.live { border-color: var(--accent-cyan); box-shadow: 0 0 14px rgba(0, 212, 255, 0.25); }
+.studio-feedback { min-height: 64px; margin-bottom: 10px; }
+.studio-score { font-family: var(--font-data); font-size: 38px; font-weight: 700; }
+.studio-score.red { color: var(--accent-red); }
+.studio-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.studio-library { width: 100%; margin-top: 12px; }
+
+/* Examen Blanc */
+.exam-wrap { max-width: 760px; margin: 0 auto; padding-bottom: 30px; }
+.exam-clock {
+  margin-left: auto;
+  font-size: 22px;
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--accent-cyan);
+}
+.exam-clock.red { color: var(--accent-red); border-color: var(--accent-red); animation: breathe 1s ease-in-out infinite; }
+.exam-sections { display: grid; gap: 6px; }
+.exam-listen {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border: 1px dashed rgba(0, 212, 255, 0.4);
+  border-radius: 8px;
+  margin: 12px 0;
+  color: var(--accent-cyan);
+}
+.exam-question { font-size: 18px; font-weight: 600; margin: 14px 0 10px; line-height: 1.5; }
+.exam-passage {
+  white-space: pre-wrap;
+  background: rgba(0, 212, 255, 0.04);
+  border-left: 3px solid var(--accent-cyan);
+  border-radius: 0 8px 8px 0;
+  padding: 12px 14px;
+  margin: 10px 0;
+  line-height: 1.6;
+}
+.exam-options { display: grid; gap: 8px; }
+.exam-opt.selected { border-left-color: var(--accent-cyan); background: rgba(0, 212, 255, 0.08); }
+.exam-pct { font-size: 52px; }
+.exam-result .exam-pct { color: var(--accent-cyan); }
+.exam-review { display: grid; gap: 8px; }
+.exam-rev-item { padding: 8px 11px; border-left: 3px solid var(--accent-green); background: rgba(46, 213, 115, 0.04); border-radius: 0 6px 6px 0; }
+.exam-rev-item.bad { border-left-color: var(--accent-red); background: rgba(255, 71, 87, 0.05); }
+
+/* Bibliothèque des mots */
+.library-wrap { max-width: 860px; margin: 0 auto; padding-bottom: 30px; }
+.library-theme { margin-bottom: 12px; }
+.library-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 8px; }
+.library-word {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  text-align: left;
+  padding: 9px 12px;
+  background: rgba(0, 212, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 160ms ease;
+}
+.library-word:hover { border-color: var(--accent-cyan); background: rgba(0, 212, 255, 0.08); }

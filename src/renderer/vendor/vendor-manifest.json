@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-12T02:15:57.555Z",
+  "generatedAt": "2026-06-12T04:31:57.053Z",
   "files": [
     {
       "file": "three.min.js",
@@ -109,8 +109,8 @@
       "version": "1.17.0",
       "license": "ISC",
       "global": "Codex.ICONS",
-      "sha256": "8fa1ed9bf200d86399cdb1550368ae0b4f2654d239ce9d824bf58bc76c227698",
-      "bytes": 6205
+      "sha256": "9126a284417776570bfff47e3469ddb9746068499bd7ae03ffa6e6a3c04d87a0",
+      "bytes": 6857
     },
     {
       "file": "world-data.js",

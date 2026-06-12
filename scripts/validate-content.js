@@ -52,6 +52,14 @@ require(path.join(ROOT, "src", "renderer", "js", "data", "kb-en.js"));
 require(path.join(ROOT, "src", "renderer", "js", "data", "kb-fr.js"));
 require(path.join(ROOT, "src", "renderer", "js", "data", "kb-es.js"));
 require(path.join(ROOT, "src", "renderer", "js", "data", "kb-de.js"));
+require(path.join(ROOT, "src", "renderer", "js", "data", "vocab-en.js"));
+require(path.join(ROOT, "src", "renderer", "js", "data", "vocab-fr.js"));
+require(path.join(ROOT, "src", "renderer", "js", "data", "vocab-es.js"));
+require(path.join(ROOT, "src", "renderer", "js", "data", "vocab-de.js"));
+require(path.join(ROOT, "src", "renderer", "js", "data", "exams-en.js"));
+require(path.join(ROOT, "src", "renderer", "js", "data", "exams-fr.js"));
+require(path.join(ROOT, "src", "renderer", "js", "data", "exams-es.js"));
+require(path.join(ROOT, "src", "renderer", "js", "data", "exams-de.js"));
 require(path.join(ROOT, "src", "renderer", "assets", "lottie", "lottie-data.js"));
 const Codex = global.Codex;
 const C = Codex.CONTENT;
@@ -125,6 +133,46 @@ for (const arcId of arcIds) {
     if (!biOk(c.title) || !biOk(c.text)) fail(`KB ${arcId} : dossier culturel incomplet`);
   }
   ok(`KB ${arcId} : ${kb.verbs.length} verbes, ${kb.grammar.length} grammaire, ${kb.phrasebook.length} phrases, ${kb.culture.length} culture`);
+}
+
+// ---------- 3 bis. Bibliothèque des mots + Examens Blancs ----------
+for (const arcId of arcIds) {
+  const bank = Codex.VOCAB[arcId];
+  if (!bank || !Array.isArray(bank.themes) || bank.themes.length < 6) {
+    fail(`VOCAB ${arcId} : moins de 6 thèmes`);
+    continue;
+  }
+  let words = 0;
+  const seenWords = new Set();
+  for (const theme of bank.themes) {
+    if (!theme.id || !theme.name || !theme.name.fr || !theme.name.en) fail(`VOCAB ${arcId} : thème sans nom bilingue`);
+    if (!Array.isArray(theme.words) || theme.words.length < 8) fail(`VOCAB ${arcId} / ${theme.id} : moins de 8 mots`);
+    for (const w of theme.words || []) {
+      if (!w.w || !w.g || !w.g.fr || !w.g.en) fail(`VOCAB ${arcId} / ${theme.id} : entrée sans gloss bilingue (${w.w || "?"})`);
+      if (seenWords.has(w.w)) fail(`VOCAB ${arcId} : mot dupliqué « ${w.w} »`);
+      seenWords.add(w.w);
+      words += 1;
+    }
+  }
+  ok(`VOCAB ${arcId} : ${bank.themes.length} thèmes, ${words} mots`);
+
+  const exam = Codex.EXAMS[arcId];
+  if (!exam) { fail(`EXAMS ${arcId} : examen blanc manquant`); continue; }
+  if (!exam.name || !exam.style || !exam.scale || !exam.durationMin) fail(`EXAMS ${arcId} : métadonnées incomplètes`);
+  let qTotal = 0;
+  for (const s of exam.sections || []) {
+    if (!s.kind || !s.name || !s.name.fr || !s.name.en || !s.intro) fail(`EXAMS ${arcId} : section incomplète`);
+    for (const [i, q] of (s.questions || []).entries()) {
+      qTotal += 1;
+      if (!Array.isArray(q.options) || q.options.length !== 4) fail(`EXAMS ${arcId} / ${s.kind} ${i + 1} : il faut 4 options`);
+      if (q.correct === undefined || !q.options[q.correct]) fail(`EXAMS ${arcId} / ${s.kind} ${i + 1} : index de réponse invalide`);
+      if (s.kind === "listening" && !q.tts) fail(`EXAMS ${arcId} / ${s.kind} ${i + 1} : énoncé audio (tts) manquant`);
+      if (s.kind !== "listening" && !q.q) fail(`EXAMS ${arcId} / ${s.kind} ${i + 1} : énoncé manquant`);
+    }
+    if (s.kind === "reading" && !s.passage) fail(`EXAMS ${arcId} / reading : passage manquant`);
+  }
+  if (qTotal < 18) fail(`EXAMS ${arcId} : moins de 18 questions (${qTotal})`);
+  ok(`EXAMS ${arcId} : « ${exam.name} », ${qTotal} questions, ${exam.sections.length} sections`);
 }
 
 // Animations Lottie embarquées : structure de base

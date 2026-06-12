@@ -109,6 +109,20 @@ window.Codex = window.Codex || {};
       type: "culture", title: R(c.title), text: R(c.text), keywords: [], payload: c,
     }));
 
+    // Bibliothèque des mots (vocabulaire thématique enrichi)
+    const vocab = Codex.VOCAB && Codex.VOCAB[arc.id];
+    if (vocab) {
+      for (const theme of vocab.themes) {
+        for (const w of theme.words) {
+          entries.push({
+            type: "phrase", title: w.w, text: R(w.g) + " " + R(theme.name),
+            keywords: [R(theme.name), w.g.fr, w.g.en].filter(Boolean),
+            payload: { phrase: w.w, note: w.g, theme: R(theme.name) },
+          });
+        }
+      }
+    }
+
     // Cartes intel des missions de l'arc (briefs + exemples)
     arc.missions.forEach((m) => {
       const card = m.intelCard;

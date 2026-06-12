@@ -48,6 +48,7 @@ const ICON_NAMES = [
   "shield", "trophy", "timer", "globe", "map-pin", "award",
   "play", "x", "lightbulb", "message-square",
   "circle-help", "book-open",
+  "mic", "headphones", "graduation-cap", "library",
 ];
 
 function buildIconsData() {

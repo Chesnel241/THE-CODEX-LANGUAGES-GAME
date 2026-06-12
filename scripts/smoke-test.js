@@ -188,8 +188,31 @@ app.whenReady().then(async () => {
       Codex.router.go('manual'); await wait(400);
       out.push(document.querySelector('.manual-wrap') ? 'MANUAL:ok' : 'MANUAL:FAIL');
       out.push(document.querySelectorAll('.manual-type').length === 5 ? 'MANUAL-TYPES:ok' : 'MANUAL-TYPES:FAIL');
-      out.push(document.querySelectorAll('.manual-medal').length === 6 ? 'MANUAL-MEDALS:ok' : 'MANUAL-MEDALS:FAIL');
+      out.push(document.querySelectorAll('.manual-medal').length === 7 ? 'MANUAL-MEDALS:ok' : 'MANUAL-MEDALS:FAIL');
       out.push(Codex.coach && typeof Codex.coach.startHq === 'function' && Codex.state.data.tutorial ? 'COACH:ok' : 'COACH:FAIL');
+
+      // ---------- Phase 9 : voix (notation pure), studio, examen, bibliothèque ----------
+      const env = [0,0.05,0.3,0.5,0.2,0.4,0.45,0.1,0.35,0.5,0.15,0.3,0.05,0];
+      const vg = Codex.voice.grade(env, 'mind the gap please', 'en');
+      out.push(vg && vg.score > 0 && vg.score <= 100 && Codex.voice.grade([], 'x', 'en').score === 0
+        ? 'VOICE:ok(' + vg.score + ')' : 'VOICE:FAIL');
+      const vb = Codex.VOCAB && Object.keys(Codex.VOCAB).length === 4 &&
+        Object.values(Codex.VOCAB).every(b => b.themes.reduce((a,t)=>a+t.words.length,0) >= 80);
+      out.push(vb ? 'VOCAB:ok' : 'VOCAB:FAIL');
+      Codex.router.go('studio'); await wait(500);
+      out.push(document.querySelector('.studio-phrase') && document.querySelector('.studio-speak') ? 'STUDIO:ok' : 'STUDIO:FAIL');
+      Codex.router.go('library'); await wait(400);
+      out.push(document.querySelectorAll('.library-word').length >= 80 ? 'LIBRARY:ok' : 'LIBRARY:FAIL');
+      Codex.router.go('exam'); await wait(400);
+      out.push(document.querySelector('.exam-intro') ? 'EXAM-UI:ok' : 'EXAM-UI:FAIL');
+      document.querySelector('.exam-intro .btn').click(); await wait(400);
+      out.push(document.querySelector('.exam-q .exam-opt') ? 'EXAM-Q:ok' : 'EXAM-Q:FAIL');
+      document.querySelector('.exam-opt').click(); await wait(120);
+      document.querySelector('.exam-submit').click(); await wait(300);
+      out.push(document.querySelector('.exam-q') ? 'EXAM-FLOW:ok' : 'EXAM-FLOW:FAIL');
+      document.querySelector('.exam-abandon').click(); await wait(400);
+      // La Bibliothèque alimente l'index ECHO (arc actif : fr-FR)
+      out.push(JSON.stringify(Codex.echoAI.ask('pourboire')).includes('pourboire') ? 'ECHO-VOCAB:ok' : 'ECHO-VOCAB:FAIL');
 
       // ---------- Phase 4 : Arène chronométrée ----------
       Codex.router.go('arena'); await wait(400);

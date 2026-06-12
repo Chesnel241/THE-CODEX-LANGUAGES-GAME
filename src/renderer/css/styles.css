@@ -39,27 +39,28 @@
 :root {
   --bg-deep: #060A12;
   --bg-surface: #0C1525;
-  --bg-card: #111E36;
-  --bg-card-hover: #18284a;
+  --bg-card: #13213C;
+  --bg-card-hover: #1B2D52;
   --accent-cyan: #00D4FF;
   --accent-purple: #9B7EFF;
   --accent-amber: #FFB347;
   --accent-red: #FF4757;
   --accent-green: #2ED573;
   --text-primary: #E2EDF7;
-  --text-muted: #8DA2BF;     /* éclairci pour la lisibilité (était #4A6080) */
-  --text-faint: #5A7090;
-  --border: #1E3050;
-  --border-soft: #16263f;
+  --text-muted: #9DB3D1;     /* contraste AA sur fond carte */
+  --text-faint: #6E86A8;
+  --border: #28406A;
+  --border-soft: #1D3052;
 
   --font-display: "Space Mono", "Cascadia Code", "Consolas", monospace;
   --font-body: "Inter", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
   --font-data: "Space Mono", "Cascadia Code", "Consolas", monospace;
 
   --ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --radius: 12px;
-  --radius-sm: 8px;
-  --shadow-card: 0 10px 32px rgba(0, 0, 0, 0.35);
+  --radius: 16px;
+  --radius-lg: 22px;
+  --radius-sm: 12px;
+  --shadow-card: 0 2px 6px rgba(0, 0, 0, 0.22), 0 16px 44px rgba(0, 0, 0, 0.38);
   --shadow-glow-cyan: 0 0 24px rgba(0, 212, 255, 0.25);
 }
 
@@ -1775,3 +1776,112 @@ body.reduced-motion *, body.reduced-motion *::before, body.reduced-motion *::aft
    centrée si courte, défilement complet (haut et bas atteignables) si longue */
 .intel-screen { justify-content: flex-start; }
 .intel-screen .screen-scroll { flex: none; margin: auto 0; padding: 22px 0 30px; }
+
+/* ============================================================
+   PHASE 10 — « CONFORT » : lisibilité, douceur, envie de rester
+   (mêmes couleurs de marque, hiérarchie plus claire, surfaces
+   arrondies, plus d'air — inspiré des tableaux de bord de jeu
+   modernes : grandes cibles, verre dépoli, pastilles, focus nets)
+   ============================================================ */
+
+/* ----- Rythme typographique ----- */
+body { line-height: 1.7; }
+.label { font-size: 12px; letter-spacing: 1.8px; }
+.small { font-size: 13.5px; line-height: 1.6; }
+h2, .h2 { letter-spacing: 0.1px; }
+
+/* ----- Boutons : grands, ronds, francs ----- */
+.btn {
+  border-radius: 14px;
+  padding: 15px 32px;
+  letter-spacing: 1.4px;
+  font-size: 14px;
+  transition: transform 160ms var(--ease-pop), box-shadow 200ms ease, filter 200ms ease, background 200ms ease;
+}
+.btn:hover { transform: translateY(-2px); }
+.btn:active { transform: translateY(0) scale(0.97); }
+.btn-ghost { background: rgba(0, 212, 255, 0.08); border-width: 1.5px; }
+.btn-ghost:hover { background: rgba(0, 212, 255, 0.16); }
+.tag-classified { border-radius: 999px; padding: 6px 16px; }
+.toast { border-radius: 999px; padding: 13px 26px; backdrop-filter: blur(8px); }
+
+/* ----- Cartes : plus d'air, relief doux ----- */
+.card { padding: 24px; }
+.card-hover:hover { transform: translateY(-3px); }
+.hq-side { gap: 14px; }
+.hq-main { gap: 16px; }
+
+/* ----- Choix & interactions : grandes cibles lisibles ----- */
+.choice-btn {
+  font-size: 15.5px;
+  line-height: 1.5;
+  padding: 14px 18px;
+  border-radius: 12px;
+}
+.word-chip { border-radius: 999px; padding: 10px 18px; font-size: 15px; }
+.echoc-chip { border-radius: 999px; padding: 9px 16px; }
+.validate-btn { border-radius: 14px; }
+
+/* ----- Barre agent (QG) : repères généreux ----- */
+.hq-topbar { padding: 16px 22px; gap: 18px; }
+.hq-avatar { border-radius: 16px; }
+.hq-actions .icon-btn {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  transition: all 180ms var(--ease-pop);
+}
+.hq-actions .icon-btn:hover { background: rgba(0, 212, 255, 0.1); transform: translateY(-2px); }
+.xp-bar { height: 10px; border-radius: 999px; overflow: hidden; }
+.xp-bar-fill { border-radius: 999px; background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple)); }
+
+/* ----- Barre ECHO & dialogues : texte qui respire ----- */
+.echo-bar { border-radius: 16px; padding: 14px 18px; }
+.echo-text { font-size: 15px; line-height: 1.55; }
+.npc-bubble { border-radius: 16px; backdrop-filter: blur(10px); }
+.npc-line { font-size: 17px; line-height: 1.55; }
+.fragment-popup { border-radius: 18px; }
+.echo-hint-btn, .proto-btn { border-radius: 12px; }
+
+/* ----- Saisies : nettes et accueillantes ----- */
+.onb-input, .echoc-input {
+  border-radius: 12px;
+  font-size: 16px;
+  padding: 14px 16px;
+}
+:is(button, input, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* ----- Verre dépoli sur les surfaces flottantes ----- */
+.modal-overlay { background: rgba(4, 9, 18, 0.6); backdrop-filter: blur(9px); }
+.proto-modal, .coach-card { border-radius: 18px; }
+.globe-panel { border-radius: 14px; }
+.map-tooltip { border-radius: 12px; }
+
+/* ----- Jauges : épaisses, rondes, lisibles d'un regard ----- */
+.suspicion-bar { height: 12px; border-radius: 999px; overflow: hidden; }
+.suspicion-fill { border-radius: 999px; }
+.studio-meter { border-radius: 999px; }
+.frag-dot { width: 13px; height: 13px; border-radius: 999px; }
+
+/* ----- Ambiance apaisée : moins de bruit visuel ----- */
+.fx-scanlines { opacity: 0.5; }
+.title-code-bg { opacity: 0.26; }
+.title-tagline { font-size: 16px; color: var(--text-muted); }
+.scene-vignette { opacity: 0.92; }
+
+/* ----- Listes & écrans de contenu ----- */
+.mission-list { gap: 14px; }
+.manual-p { font-size: 14px; }
+.proto-rules li { font-size: 14px; }
+.library-word { padding: 11px 14px; border-radius: 12px; }
+.manual-type { border-radius: 12px; padding: 12px 14px; }
+.exam-opt { font-size: 15.5px; }
+.vault-grid { gap: 14px; }
+
+/* ----- En-têtes de page ----- */
+.page-header { padding: 18px 26px; gap: 16px; }
+.back-btn { border-radius: 999px; padding: 9px 18px; }

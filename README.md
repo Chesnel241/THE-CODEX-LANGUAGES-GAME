@@ -13,6 +13,21 @@ Application desktop **Electron**, 100 % hors-ligne, zéro dépendance runtime.
 **🎮 Pour jouer : voir [GUIDE-INSTALLATION.md](GUIDE-INSTALLATION.md)** —
 téléchargez le `.exe` depuis la page Releases, double-cliquez, jouez.
 
+## Nouveautés Phase 10 — UI « CONFORT » : clarté et lisibilité pour tous
+
+- 🔆 **Contrastes relevés** : textes secondaires éclaircis (AA), surfaces de
+  cartes rehaussées, bordures plus visibles — tout se lit sans effort.
+- 🟦 **Surfaces douces** : rayons élargis (cartes 16 px, popups 18 px),
+  ombres en couches, verre dépoli sur les modales et bulles de dialogue.
+- 🎯 **Grandes cibles amicales** : boutons plus grands avec rebond au survol
+  et pression au clic, choix de dialogue 15,5 px, chips et jauges en
+  pastilles, boutons d'action du QG 46 px.
+- 🌬️ **Plus d'air partout** : espacement des grilles et panneaux élargi,
+  barre agent et en-têtes plus généreux, lignes aérées (1,7).
+- 🧘 **Bruit visuel apaisé** : pluie de code du titre adoucie, scanlines
+  discrètes — l'ambiance espionnage reste, la fatigue visuelle part.
+- ⌨️ **Focus clavier nets** sur tous les contrôles (anneau cyan).
+
 ## Nouveautés Phase 9 — VOIX DU JOUEUR, BIBLIOTHÈQUE & EXAMENS BLANCS
 
 - 🎙️ **Studio Vocal — le joueur parle enfin** : écoutez le modèle (TTS natif),

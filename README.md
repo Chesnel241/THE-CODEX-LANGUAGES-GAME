@@ -30,6 +30,9 @@ téléchargez le `.exe` depuis la page Releases, double-cliquez, jouez.
   (allemand) avec estimation CECRL. Conditions réelles : chrono, écoute
   limitée à 2, énoncés audio non affichés, corrections détaillées à la fin.
   Nouvelle médaille **🎓 Certifié** (≥ 80 %).
+- 📡 **Contrôle Radio post-mission** : après chaque Carte Intel gagnée,
+  lisez la phrase d'exemple à voix haute au micro pour « verrouiller »
+  l'intel (+15 XP) — la parole entre dans la boucle de mission.
 - 🔐 Permissions durcies : seul `media:audio` (micro) est autorisé, tout le
   reste demeure refusé ; analyse vocale sans aucun enregistrement.
 

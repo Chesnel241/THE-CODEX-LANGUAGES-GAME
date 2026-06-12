@@ -1758,3 +1758,20 @@ body.reduced-motion *, body.reduced-motion *::before, body.reduced-motion *::aft
   transition: all 160ms ease;
 }
 .library-word:hover { border-color: var(--accent-cyan); background: rgba(0, 212, 255, 0.08); }
+
+/* Contrôle radio post-mission (lecture à voix haute de l'intel) */
+.radio-check {
+  margin: 14px 0 4px;
+  padding: 12px 14px;
+  border: 1px dashed rgba(155, 126, 255, 0.45);
+  border-radius: 8px;
+  background: rgba(155, 126, 255, 0.05);
+  text-align: left;
+}
+.radio-check .studio-meter { max-width: 100%; }
+.radio-verdict { min-height: 16px; }
+
+/* Carte Intel haute (contrôle radio) : centrage par marges automatiques —
+   centrée si courte, défilement complet (haut et bas atteignables) si longue */
+.intel-screen { justify-content: flex-start; }
+.intel-screen .screen-scroll { flex: none; margin: auto 0; padding: 22px 0 30px; }

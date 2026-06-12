@@ -180,6 +180,10 @@ window.Codex = window.Codex || {};
       "hq.examSub": "Test type certification — {name}",
 
       // Bibliothèque des mots
+      "intel.radio": "CONTRÔLE RADIO",
+      "intel.radioSub": "Lisez la phrase à voix haute pour verrouiller l'intel.",
+      "intel.radioOk": "Transmission claire, Agent — intel verrouillé.",
+      "intel.radioRetry": "Transmission brouillée — réessayez.",
       "library.title": "Bibliothèque des mots",
       "library.sub": "{n} mots de fréquence, classés par thème — cliquez pour écouter.",
       "library.open": "BIBLIOTHÈQUE DES MOTS",
@@ -563,6 +567,10 @@ window.Codex = window.Codex || {};
       "hq.examSub": "Certification-style test — {name}",
 
       // Word library
+      "intel.radio": "RADIO CHECK",
+      "intel.radioSub": "Read the phrase aloud to lock in the intel.",
+      "intel.radioOk": "Transmission clear, Agent — intel locked in.",
+      "intel.radioRetry": "Garbled transmission — try again.",
       "library.title": "Word Library",
       "library.sub": "{n} high-frequency words by theme — click to listen.",
       "library.open": "WORD LIBRARY",

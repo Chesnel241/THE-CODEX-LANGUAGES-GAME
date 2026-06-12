@@ -102,6 +102,66 @@ window.Codex = window.Codex || {};
     });
     actions.appendChild(doneBtn);
 
+    // Contrôle radio : lire l'intel à voix haute (bonus XP, facultatif)
+    if (Codex.voice && Codex.voice.supported()) {
+      const phrase = (card.examples && card.examples[0]) || card.speakText || card.lemma;
+      const radio = el(`
+        <div class="radio-check">
+          <div class="spread">
+            <span class="label purple">${esc(Codex.t("intel.radio"))}</span>
+            <span class="small muted">+15 XP</span>
+          </div>
+          <div class="small muted mt-1">${esc(Codex.t("intel.radioSub"))}</div>
+          <div class="mono cyan mt-1 radio-phrase"></div>
+          <div class="studio-meter mt-1"><i></i></div>
+          <div class="row mt-1" style="gap:8px">
+            <button class="btn btn-ghost radio-speak"></button>
+            <span class="small radio-verdict"></span>
+          </div>
+        </div>`);
+      radio.querySelector(".radio-phrase").textContent = phrase;
+      const speakBtn = radio.querySelector(".radio-speak");
+      const verdict = radio.querySelector(".radio-verdict");
+      const meterFill = radio.querySelector(".studio-meter i");
+      speakBtn.appendChild(Codex.ui.icon("mic", { size: 15 }));
+      speakBtn.appendChild(document.createTextNode(" " + Codex.t("studio.speak")));
+      let bonusGiven = false;
+      speakBtn.addEventListener("click", async () => {
+        Codex.audio.sfx.click();
+        speakBtn.disabled = true;
+        verdict.textContent = Codex.t("studio.recording");
+        verdict.className = "small radio-verdict purple";
+        const take = await Codex.voice.record({
+          onLevel: (v) => { meterFill.style.width = `${Math.round(v * 100)}%`; },
+        });
+        meterFill.style.width = "0%";
+        speakBtn.disabled = false;
+        if (take.error) {
+          verdict.textContent = Codex.t("studio.micDenied");
+          verdict.className = "small radio-verdict amber";
+          return;
+        }
+        const lang = (Codex.arc().language.tts || "en").slice(0, 2);
+        const g = Codex.voice.grade(take.envelope, phrase, lang);
+        if (g.score >= 65) {
+          verdict.textContent = `${g.score}/100 — ${Codex.t("intel.radioOk")}`;
+          verdict.className = "small radio-verdict green";
+          Codex.audio.sfx.good();
+          if (!bonusGiven) {
+            bonusGiven = true;
+            Codex.state.addXp(15);
+            Codex.ui.toast(Codex.t("intel.radioOk"), "📡");
+          }
+          speakBtn.disabled = true;
+        } else {
+          verdict.textContent = `${g.score}/100 — ${Codex.t("intel.radioRetry")}`;
+          verdict.className = "small radio-verdict amber";
+          Codex.audio.sfx.error();
+        }
+      });
+      node.insertBefore(radio, actions);
+    }
+
     const scroll = el(`<div class="screen-scroll" style="display:flex; justify-content:center"></div>`);
     scroll.appendChild(node);
     screenEl.appendChild(scroll);
